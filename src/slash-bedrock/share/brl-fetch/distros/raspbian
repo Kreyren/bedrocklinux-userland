@@ -1,4 +1,5 @@
 #!/bedrock/libexec/busybox sh
+# shellcheck shell=sh
 #
 # Raspbian bootstrap support
 #

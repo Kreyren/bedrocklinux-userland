@@ -1,4 +1,5 @@
 #!/bedrock/libexec/busybox sh
+# shellcheck shell=sh
 #
 # Exherbo Linux bootstrap support
 # Copyright 2019 Wulf C. Krueger <philantrop@exherbo.org>

@@ -875,8 +875,6 @@ check:
 	#
 	# check against shellcheck
 	#
-	# - SC1008: unrecognized shebang, because shellcheck does not know about
-	#   `#!/bedrock/libexec/busybox sh`
 	# - SC2059: don't use variables in printf format string.  Following
 	#   this recommendation with ANSI color variables did not work for some
 	#   reason.  Excluding the check for the time being.
@@ -887,15 +885,15 @@ check:
 	for file in $$(find src/ -type f); do \
 		if head -n1 "$$file" | grep -q '^#!.*busybox sh$$'; then \
 			echo "checking shell file $$file"; \
-			shellcheck -x -s sh --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
+			shellcheck -x -s sh --exclude="SC2059,SC2039,SC1090" "$$file" || exit 1; \
 			! cat "$$file" | shfmt -p -d | grep '.' || exit 1; \
 		elif head -n1 "$$file" | grep -q '^#!.*bash$$'; then \
 			echo "checking bash file $$file"; \
-			shellcheck -x -s bash --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
+			shellcheck -x -s bash --exclude="SC2059,SC2039,SC1090" "$$file" || exit 1; \
 			! cat "$$file" | shfmt -ln bash -d | grep '.' || exit 1; \
 		elif head -n1 "$$file" | grep -q -e '^#!.*zsh$$' -e '^#compdef' "$$file"; then \
 			echo "checking zsh file $$file"; \
-			shellcheck -x -s bash --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
+			shellcheck -x -s bash --exclude="SC2059,SC2039,SC1090" "$$file" || exit 1; \
 			! cat "$$file" | shfmt -ln bash -d | grep '.' || exit 1; \
 		fi; \
 	done
