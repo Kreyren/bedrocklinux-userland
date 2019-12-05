@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl update
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2019 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Updates Bedrock Linux system
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-update' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-update), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Updates Bedrock Linux system (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl update ${color_sub}[options]${color_norm} ${color_sub}[file]${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl update ${color_sub}[options]${color_norm} ${color_sub}[file]${color_norm}
 
 Applies updates to the ${color_term}bedrock stratum${color_norm}.
 
@@ -41,7 +39,7 @@ ${color_norm}"
 }
 
 download_update() {
-	notice "Checking for updates"
+	einfo "Checking for updates"
 
 	current_version="$(awk '{print$3}' </bedrock/etc/bedrock-release)"
 	newest_version="${current_version}"
@@ -83,13 +81,13 @@ download_update() {
 		abort "No working mirrors found"
 	fi
 	if [ -z "${newest_update_url}" ]; then
-		notice "No updates"
+		einfo "No updates"
 		trap '' EXIT
 		return
 	fi
-	notice "Found update at ${color_link}${newest_update_url}${color_norm}"
+	einfo "Found update at ${color_link}${newest_update_url}${color_norm}"
 
-	notice "Downloading update"
+	einfo "Downloading update"
 	if ! wget -O- "${newest_update_url}" >"${update}" 2>/bedrock/run/tmp; then
 		cat /bedrock/run/tmp
 		abort "Unable to download update."
@@ -97,7 +95,7 @@ download_update() {
 }
 
 verify_update() {
-	notice "Preparing gpg"
+	einfo "Preparing gpg"
 	#
 	# A gnupg homedir is not intended portable across gnupg versions or
 	# builds.  An exported key file is the intended method of passing keys
@@ -114,7 +112,7 @@ verify_update() {
 		abort "Unable to prepare gpg."
 	fi
 
-	notice "Verifying update"
+	einfo "Verifying update"
 	#
 	# Bedrock update files are scripts with PGP/GPG signatures appended at
 	# the end.  This is preferred over clearsign because clearsign
@@ -229,12 +227,12 @@ if ! [ -f "${update}" ]; then
 fi
 
 if "${skip_check}"; then
-	notice "Skipping update signature verification"
+	einfo "Skipping update signature verification"
 else
 	verify_update
 fi
 
-notice "Applying update"
+einfo "Applying update"
 
 if "${force}"; then
 	/bedrock/libexec/busybox sh "${update}" --force-update
@@ -242,4 +240,4 @@ else
 	/bedrock/libexec/busybox sh "${update}" --update
 fi
 
-exit_success
+die 0

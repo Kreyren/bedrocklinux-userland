@@ -1,77 +1,34 @@
 /*
- * crossfs.c
- *
- *      This program is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU General Public License
- *      version 2 as published by the Free Software Foundation.
- *
- * Copyright (c) 2014-2018 Daniel Thau <danthau@bedrocklinux.org>
- *
- * This program implements a filesystem which provides cross-stratum file
- * access.  It fulfills filesystem requests by forwarding the appropriate
- * stratum's copy of a given file, possibly modifying it in transit if needed.
- *
- * This filesystem makes heavy use of the word "path" in different contexts.
- * For conceptual consistency, paths are broken up into four categories:
- *
- * - "ipath", or "incoming path", refers to the file paths incoming from the
- *   processes' request to this filesystem.  For example, if a process wants to
- *   know about <mount>/foo/bar, /foo/bar is ipath.
- * - "cpath", or "configured path", is a path the filesystem is configured to
- *   handle.  For example, a cpath may be /bin, indicating the filesystem knows
- *   how to fulfill an ipath on /bin or a subdirectory of /bin.
- * - "lpath", or "local path", is a path relative to a given stratum.  These
- *   are usually paired with a reference to a corresponding stratum's root
- *   directory such as a "root_fd".  These are used to map cpaths to
- *   files/directories that may fulfill requests on/around the cpath.
- * - "bpath", or "backing path", is a reference to a file that may fulfill a
- *   given ipath.  Like lpath, it is usually paired with a reference to a
- *   stratum root directory.  This is usually calculated based on ipath, cpath,
- *   and lpath.
- *
- * For example, if a process may query about the ipath /bin/vi.  There may be a
- * cpath at /bin which is mapped to three lpaths: /usr/local/bin, /usr/bin, and
- * /bin.  bpaths are generated from this information:  /usr/local/bin/vi,
- * /usr/bin/vi, and /bin/vi.  Each of these are checked to fulfill the given
- * ipath.
- *
- * Various functions starting with "m_" implement filesystem calls.  These are
- * the main entry point once the filesystem is running.  A thread may be
- * spawned for each call such that several may be running at once.  Special
- * care must be taken with them:
- *
- * - The thread's fsuid/fsgid should be set to the incoming caller's to export
- *   permissions access to the kernel.  This should happen immediately, before
- *   any file system calls are made.  Use set_caller_fsid().
- * - cfg_lock should be locked around cfg access to ensure it is not read while
- *   being modified.  The vast majority of accesses will be read-only, and
- *   non-contended read locks/unlocks are cheap.  Thus, it is not unreasonable
- *   to do this very early/late in the function.  Careful not to early return
- *   before unlocking.
- * - File system calls relative to the root or cwd are not thread safe.  Use
- *   fchroot_* wrappers which internally lock.  Filesystem calls relative to a
- *   file descriptor (e.g. readlinkat()) are thread safe.
- *
- * Having to lock around chroot() calls is obviously undesirable.  The
- * alternative is to write our own function to walk a path as though it was
- * chrooted, resolving to the ultimate path.  In practice, such attempts were
- * found to be slower than the lock-and-chroot method used here, primarily due
- * to the large number of expensive system calls (repeated readlink()).
- *
- * Another obviously undesirable performance hit revolves around repeated work
- * between readdir() and getattr().  readdir() does a lot of work to find the
- * corresponding backing files.  Immediately afterwards, getattr() is usually
- * called and has to again calculate the same backing file.  In theory, this
- * information could be cached for a short time for getattr.  Linux/FUSE
- * actually provide a caching solution for exactly this called "readdirplus".
- * However, at the time of writing this feature is broken:
- *
- *     https://sourceforge.net/p/fuse/mailman/fuse-devel/thread/878tcgxvp2.fsf@vostro.rath.org/#msg36209107
- *
- * Our own implementation of caching may be useful.  We could cache the getattr
- * metadata in the readdir() loop, and/or we could cache the ipath->cpath
- * calculation.  Cache invalidation may be tricky.
- */
+Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+Based in part upon 'brl-fetch' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/installer/installer.sh), which is:
+		Copyright 2014-2018 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
+crossfs.c
+
+This program implements a filesystem which provides cross-stratum file access. It fulfills filesystem requests by forwarding the appropriate stratum's copy of a given file, possibly modifying it in transit if needed.
+
+This filesystem makes heavy use of the word "path" in different contexts. For conceptual consistency, paths are broken up into four categories:
+	- "ipath", or "incoming path", refers to the file paths incoming from the processes' request to this filesystem.  For example, if a process wants to know about <mount>/foo/bar, /foo/bar is ipath.
+	- "cpath", or "configured path", is a path the filesystem is configured to handle.  For example, a cpath may be /bin, indicating the filesystem knows how to fulfill an ipath on /bin or a subdirectory of /bin.
+	- "lpath", or "local path", is a path relative to a given stratum. These are usually paired with a reference to a corresponding stratum's root directory such as a "root_fd".  These are used to map cpaths to files/directories that may fulfill requests on/around the cpath.
+	- "bpath", or "backing path", is a reference to a file that may fulfill a given ipath.  Like lpath, it is usually paired with a reference to a stratum root directory. This is usually calculated based on ipath, cpath and lpath.
+
+For example, if a process may query about the ipath /bin/vi. There may be a cpath at /bin which is mapped to three lpaths: /usr/local/bin, /usr/bin, and /bin. bpaths are generated from this information:  /usr/local/bin/vi, /usr/bin/vi, and /bin/vi.  Each of these are checked to fulfill the given ipath.
+
+Various functions starting with "m_" implement filesystem calls. These are the main entry point once the filesystem is running.  A thread may be spawned for each call such that several may be running at once.  Special care must be taken with them.
+	- The thread's fsuid/fsgid should be set to the incoming caller's to export permissions access to the kernel. This should happen immediately, before any file system calls are made. Use set_caller_fsid().
+	- cfg_lock should be locked around cfg access to ensure it is not read while being modified. The vast majority of accesses will be read-only, and non-contended read locks/unlocks are cheap.  Thus, it is not unreasonable to do this very early/late in the function. Careful not to early return before unlocking.
+	- File system calls relative to the root or cwd are not thread safe. Use fchroot_* wrappers which internally lock. Filesystem calls relative to a file descriptor (e.g. readlinkat()) are thread safe.
+
+Having to lock around chroot() calls is obviously undesirable. The alternative is to write our own function to walk a path as though it was chrooted, resolving to the ultimate path. In practice, such attempts were
+found to be slower than the lock-and-chroot method used here, primarily due to the large number of expensive system calls (repeated readlink()).
+
+Another obviously undesirable performance hit revolves around repeated work between readdir() and getattr(). readdir() does a lot of work to find the corresponding backing files. Immediately afterwards, getattr() is usually called and has to again calculate the same backing file. In theory, this information could be cached for a short time for getattr. Linux/FUSE actually provide a caching solution for exactly this called "readdirplus". However, at the time of writing this feature is broken:
+
+	https://sourceforge.net/p/fuse/mailman/fuse-devel/thread/878tcgxvp2.fsf@vostro.rath.org/#msg36209107
+
+Our own implementation of caching may be useful. We could cache the getattr metadata in the readdir() loop, and/or we could cache the ipath->cpath calculation. Cache invalidation may be tricky.
+*/
 
 #define FUSE_USE_VERSION 32
 #define _GNU_SOURCE
@@ -81,7 +38,54 @@
 #include <sys/xattr.h>
 #include <errno.h>
 #include <fuse3/fuse.h>
-#include <linux/limits.h>
+
+/* Define limtis cross-platform */
+/* FIXME:
+at least let the compiler size array by itself, a'la int array[] = { ... }; ... for (int column = 0; column < (sizeof array/sizeof array[0]); column++) ... 20 should likely be computed too.
+*/
+
+#ifdef __linux
+	#include <linux/limits.h>
+
+#elif defined(FreeBSD)
+	#include <sys/syslimits.h>
+
+#elif __APPLE__
+	#include <TargetConditionals.h>
+
+	#if TARGET_IPHONE_SIMULATOR
+		#include <sys/syslimits.h>
+
+	#elif TARGET_OS_IPHONE
+		#include <sys/syslimits.h>
+
+	#elif TARGET_OS_MAC
+		#include <sys/syslimits.h>
+
+	#else
+	#   error "Unknown Apple platform has been detected, unable to define limits.h"
+
+	#endif
+
+#elif __unix
+	#   error "Unknown Unix platform has been detected, unable to define limits.h"
+
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+	#   error "FIXME: Define limits.h for WIN32"
+	#ifdef _WIN64
+	#   error "FIXME: Define limits.h for WIN64"
+	#else
+	#   error "Unknown Windows platform has been detected, unable to define limits.h"
+	#endif
+
+#elif __posix
+	#   error "FIXME: Implement POSIX compatibility"
+
+#else
+	#   error "Unknown Platform"
+
+#endif
+
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/fsuid.h>
@@ -883,7 +887,7 @@ static inline int filldir_all_bpath(struct cfg_entry *cfg, const char *ipath,
  * - Skip set number of input bytes before writing into buffer
  */
 void strcatoff(char *buf, const char *const str, size_t str_len,
-	size_t * offset, size_t * wrote, size_t max)
+	size_t *offset, size_t *wrote, size_t max)
 {
 	if ((*offset) >= str_len) {
 		(*offset) -= str_len;

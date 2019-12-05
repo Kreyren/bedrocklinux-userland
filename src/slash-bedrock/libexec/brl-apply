@@ -1,23 +1,22 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl apply
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# (re)loads configuration
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-apply' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-apply), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# (re)loads configuration (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 # Remove typical runtime sanity checks, as leaving a system half-configured is
 # worse than aborting mid-configure.
 set +eu
 trap '' EXIT
 
 print_help() {
-	printf "Usage: ${color_cmd}brl apply ${color_sub}[options]${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl apply ${color_sub}[options]${color_norm}
 
 Apply ${color_file}/bedrock/etc/bedrock.conf${color_norm} configuration changes.  Requires root.
 
@@ -273,4 +272,4 @@ if "${need_shell_change}"; then
 	fi
 fi
 
-exit_success
+die 0

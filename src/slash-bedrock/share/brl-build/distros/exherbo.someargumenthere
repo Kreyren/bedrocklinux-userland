@@ -1,0 +1,11 @@
+#!/bedrock/libexec/busybox sh
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+
+# Builds paludis userland into a usable stratum
+# Legend: W-WIP; X-done; F-Fixme
+# - [ ] Make File System Hierarchy 3.0 core
+# - [ ] Export toolchain needed for paludis
+# - [ ] Export paludis
+# - [ ] Let paludis handle the rest

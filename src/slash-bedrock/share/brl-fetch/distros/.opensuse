@@ -1,4 +1,5 @@
 #!/bedrock/libexec/busybox sh
+# shellcheck shell=sh
 #
 # openSUSE bootstrap support
 #
@@ -15,7 +16,12 @@
 # fetch fails.  Thus, this is disabled.
 #
 
-. /bedrock/share/common-code
+# This is sourced by brl-fetch -> source for checks
+# shellcheck source=src/slash-bedrock/libexec/brl-fetch
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 trap 'fetch_abort "Unexpected error occurred."' EXIT
 
 check_supported() {

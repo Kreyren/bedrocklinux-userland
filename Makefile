@@ -25,7 +25,6 @@
 # - meson 0.38 or newer
 # - ninja-build
 # - pkg-config
-# - rsyn
 # - rsync
 # - udev (build-time only)
 #
@@ -131,14 +130,14 @@
 #
 #     make check
 
-BEDROCK_VERSION=0.7.11beta2
-CODENAME=Poki
+BEDROCK_VERSION=9999
+CODENAME=Anubis
 ARCHITECTURE=$(shell ./detect_arch.sh | head -n1)
 FILE_ARCH_NAME=$(shell ./detect_arch.sh | tail -1)
-RELEASE=Bedrock Linux $(BEDROCK_VERSION) $(CODENAME)
-INSTALLER=bedrock-linux-$(BEDROCK_VERSION)-$(ARCHITECTURE).sh
+RELEASE=Kreyrock Linux $(BEDROCK_VERSION) $(CODENAME)
+INSTALLER=Kreyrock-linux-$(BEDROCK_VERSION)-$(ARCHITECTURE).sh
 
-RELEASE_CFLAGS=-O2
+RELEASE_CFLAGS=-O3
 
 ROOT=$(shell pwd)
 BUILD=$(ROOT)/build/$(ARCHITECTURE)
@@ -153,11 +152,29 @@ INDENT_FLAGS=--linux-style --dont-line-up-parentheses \
 	--continuation-indentation8 --indent-label0 --case-indentation0
 WERROR_FLAGS=-Werror -Wall -Wextra -std=c99 -pedantic
 
+define my_important_task =
+	#!/bin/sh
+	for file in $$(find src/ -type f); do
+		case "$(head -n1 $$file)" in
+			'*sh')
+				shellcheck -x -s sh "$$file" || exit 1
+			;;
+			'*bash')
+				echo "checking bash file $$file"
+				shellcheck -x -s bash "$$file" || exit 1
+			;;
+			'#compdef*')
+				echo "checking zsh file $$file"
+				shellcheck -x -s sh "$$file" || exit 1
+		esac
+	done
+endef
+
 all: $(INSTALLER)
 
 remove_vendor_source:
 	rm -rf ./vendor
-  
+
 fetch_vendor_sources: \
 	vendor/busybox/.success_retrieving_source \
 	vendor/libaio/.success_retrieving_source \
@@ -174,7 +191,7 @@ fetch_vendor_sources: \
 
 clean:
 	rm -rf build/*
-	rm -f bedrock-linux-*-*.sh
+	rm -f Kreyrock-linux-*-*.sh
 
 #
 # The build directory structure.  This is a dependency of just about
@@ -223,7 +240,7 @@ builddir: $(COMPLETED)/builddir
 #
 # Support libraries and tools.  Populates $(SUPPORT)
 #
- 
+
 vendor/linux_headers/.success_fetching_source:
 	rm -rf vendor/linux_headers
 	mkdir -p vendor/linux_headers
@@ -874,31 +891,28 @@ check:
 	# - indent (GNU)
 	#
 	# check against shellcheck
-	#
-	# - SC1008: unrecognized shebang, because shellcheck does not know about
-	#   `#!/bedrock/libexec/busybox sh`
-	# - SC2059: don't use variables in printf format string.  Following
-	#   this recommendation with ANSI color variables did not work for some
-	#   reason.  Excluding the check for the time being.
-	# - SC2039: `[ \< ]` and `[ \> ]` are non-POSIX.  However, they do work
-	#   with busybox.
-	# - SC1090: Can't follow dynamic sources.  That's fine, we know where
-	#   they are and are including them in the list to be checked.
-	for file in $$(find src/ -type f); do \
-		if head -n1 "$$file" | grep -q '^#!.*busybox sh$$'; then \
-			echo "checking shell file $$file"; \
-			shellcheck -x -s sh --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
-			! cat "$$file" | shfmt -p -d | grep '.' || exit 1; \
-		elif head -n1 "$$file" | grep -q '^#!.*bash$$'; then \
-			echo "checking bash file $$file"; \
-			shellcheck -x -s bash --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
-			! cat "$$file" | shfmt -ln bash -d | grep '.' || exit 1; \
-		elif head -n1 "$$file" | grep -q -e '^#!.*zsh$$' -e '^#compdef' "$$file"; then \
-			echo "checking zsh file $$file"; \
-			shellcheck -x -s bash --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
-			! cat "$$file" | shfmt -ln bash -d | grep '.' || exit 1; \
-		fi; \
+
+	# Keep the spaces in the printf string for better formatting of output:
+	## checking shell file path
+	## checking zsh   file path
+	## checking bash  file path
+	##                ^ Notice file aligned
+	for file in $$(find . -not \( -path './.git' -prune -o -path './vendor' -prune \) -type f); do \
+		case $$(head -n1 "$$file") in \
+			'#!/'*'/bash'|'#!/'*' bash') \
+				printf '%s\n' "checking bash  file $${file#./}" ;\
+				shellcheck -x -s bash "$$file" || exit 1 ;\
+			;; \
+			'#!/'*'/sh'|'#!/'*' sh') \
+				printf '%s\n' "checking shell file $${file#./}" ;\
+				shellcheck -x -s sh "$$file" || exit 1 ;\
+			;; \
+			'#compdef'*) \
+				printf '%s\n' "checking zsh   file $${file#./}" ;\
+				shellcheck -x -s bash "$$file" || exit 1 ;\
+		esac ;\
 	done
+
 	# check against cppcheck
 	for file in $$(find src/ -type f -name "*.[ch]"); do \
 		cppcheck --error-exitcode=1 "$$file" || exit 1; \
@@ -916,9 +930,10 @@ check:
 		echo "checking formatting of $$file"; \
 		! cat "$$file" | indent $(INDENT_FLAGS) | diff -- "$$file" - | grep '.' || exit 1; \
 	done
-	@ echo "======================================="
-	@ echo "=== All static analysis checks pass ==="
-	@ echo "======================================="
+	@ printf '%s\n' \
+	"=======================================" \
+	"=== All static analysis checks pass ===" \
+	"======================================="
 
 #
 # Release build environment setup
@@ -1214,4 +1229,3 @@ release: \
 	@ echo "=== Completed Bedrock Linux $(BEDROCK_VERSION) release build ==="
 	@ echo "=== Completed Bedrock Linux $(BEDROCK_VERSION) release build ===" | sed 's/./=/g'
 	@ printf "\e[39m\n"
-

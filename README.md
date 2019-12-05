@@ -1,44 +1,76 @@
-Bedrock Linux Userland
-======================
+# (WIP name)
 
-Bedrock Linux is a Linux distribution composed of user-selected components from
-various other Linux distributions.  For example, with Bedrock one may use the
-installation process from one distribution, the init from another, a window
-manager from a third, and a web browser from a fourth.  Bedrock strives to make
-these components work together as transparently as possible such that for
-day-to-day operations it is not readily evident that the various components
-were originally intended for disparate distributions.
+![image](https://user-images.githubusercontent.com/11302521/69683941-e167f400-10b6-11ea-86a7-7bc842f40d5d.png)
 
-This repository contains all the userland code for a Bedrock Linux system.  It
-can create a script which may be used to install or update a Bedrock Linux
-system.
+WORK IN PROGRESS, USE ON YOUR OWN RISK!
 
-Building the installer/updater
-------------------------------
+(WIP name) is Bedrock Linux inspired unix-like distribution.
 
-On a Linux system, install the build dependencies:
+true rolling release
 
-- Standard UNIX utilities: grep, sed, awk, etc.
-- gcc 4.9.1 or newer
-- git 1.8 or newer
-- meson 0.38 or newer
-- ninja-build
-- bison
-- libtool
-- autoconf
-- pkg-config
-- fakeroot
-- make
-- gzip
-- gpg (optional)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/Kreyrock/Kreyrock)
 
+Flow chart https://www.yworks.com/yed-live/?file=https://raw.githubusercontent.com/Kreyrock/Kreyrock/master/docs/flowchart.xml
+
+## Building
+
+### Dependencies
+- Standard UNIX utilities: grep, sed, awk, etc. <!-- more info needed -->
+- gcc 4.9.1 or newer <!-- why -->
+- git 1.8 or newer <!-- why -->
+- meson 0.38 or newer <!-- why -->
+- ninja-build <!-- why -->
+- bison <!-- why -->
+- libtool <!-- why -->
+- autoconf <!-- why -->
+- pkg-config <!-- why -->
+- fakeroot <!-- why -->
+- make <!-- We are using Makefile -->
+- gzip <!-- why -->
+- shellcheck (>0.4.0) <!-- Shellcheck source is used (https://github.com/koalaman/shellcheck/wiki/Directive#source/) -->
+- shfmt <!-- To get faster runtime (benchmark needed) -->
+- rsync <!-- why -->
+- autopoint <!-- why -->
+- gpg (optional) <!-- For signatures -->
+
+Quick install:
+```sh
+# apt-based
+sudo apt-get install -y meson gcc git ninja-build bison libtool libcap-dev autoconf pkg-config fakeroot gzip rsync uthash-dev libattr1-dev autopoint shellcheck && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
+# Ubuntu
+sudo apt-get -y install meson cppcheck libcap-dev clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot libattr1-dev uthash-dev gzip rsync autopoint uthash-dev shellcheck && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
+# Ubuntu <19 (FIXME: Missing libfuse3-dev)
+sudo apt-get -y install meson cppcheck libcap-dev clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot libattr1-dev uthash-dev gzip rsync autopoint uthash-dev shellcheck && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
+# Debian
+sudo apt-get install meson cppcheck clang libfuse3-dev gcc  libcap-devgit ninja-build bison libtool autoconf pkg-config libcap-dev indent libattr1-dev  fakeroot uthash-dev gzip rsync autopoint shellcheck -y && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
+# FreeBSD - GCC (FIXME)
+pkg install -y meson cppcheck fusefs-libs3 gcc git ninja bison libtool autoconf pkg-config indent fakeroot gzip rsync autopoint shellcheck
+# FreeBSD - Clang (FIXME)
+pkg install -y meson cppcheck clang fusefs-libs3 git ninja bison libtool autoconf pkg-config indent fakeroot gzip rsync autopoint shellcheck
+# Portage-based - Clang
+emerge -avuDNj dev-util/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-vcs/git dev-util/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-ruby/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck
+# pacman-based
+FIXME
+# paludis-based - Clang
+cave resolve sys-devel/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
+# paludis-based - GCC
+cave resolve sys-devel/meson dev-util/cppcheck sys-devel/gcc sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
+# MacOSX (FIXME)
+brew install shellcheck cppcheck shfmt
+# Cygwin (FIXME)
+FIXME
+```
+
+### Actual building
 Ensure you have internet access (to fetch upstream dependencies), then run:
-
-	make GPGID=<gpg-id-with-which-to-sign>
+```sh
+make GPGID=<gpg-id-with-which-to-sign>
+```
 
 to build a signed install/update script or
-
-	make SKIPSIGN=true
+```sh
+make SKIPSIGN=true
+```
 
 to build an unsigned install/update script.
 
@@ -49,35 +81,32 @@ projects:
   jobs.
 - You may set `CFLAGS` to pass flags to the C compiler such as `-Os` and
   `-march=native`.
-	- Bedrock's components *must* be statically compiled.  The build system
+	- Bedrock's components **MUST** be statically compiled.  The build system
 	  sets `-static` in various places.  Do not set `-dynamic` or otherwise
-	  try to change away from a static build.
+	  try to change away from a static build (FIXME, implement dynamic).
 
 This will produce a script such as:
 
-	bedrock-linux-0.7-x86_64.sh
+```
+(WIP name)-<OS>-<version>-<arch>.sh
+```
 
-which may be used to install or update a Bedrock Linux system.
+## Installation
 
-Installation
-
-- Install another, traditional Linux distribution.
+- Install another, traditional Linux distribution(FIXME, build from scratch).
 	- Select a filesystem which supports extended filesystem attributes.
 - Setup users, networking, etc as one would typically do.
 - Reboot into the fresh install.
-- Get the `bedrock-linux-<version>-<arch>.sh` script onto the system, either by
-  building it locally or getting a pre-built version from elsewhere.
-- Run the script as root with the `--hijack` flag.
+- Get the `(WIP name)-<OS>-<version>-<arch>.sh` script onto the system by building it locally
+- Run the script as root with the `--hijack <name>` argument (name is optional).
 - Follow the prompts.
 - Reboot.  Re-select the new install at any bootloader prompt.
-- You're now running Bedrock Linux, but with only the initial install's files.
-  To leverage Bedrock's features, we need other distribution's files as well.
-- Run `brl fetch --list` to see the various distributions which Bedrock knows
-  how to fetch.
-- As root, run `brl fetch <distros>` to acquire upstream distribution files.
-	- If this fails, you may need to manually look up release and mirror
-	  information for the desired distribution and provide the information
-	  with `--release` and `--mirror` flags.
+- You're now running (WIP name), but with only the initial install's files. To leverage (WIP name)'s features, we need other distribution's files as well.
+- Run `brl fetch --list` to see the various distributions which (WIP name) knows how to fetch or build from source/scratch.
+- As root, run `brl fetch <fetcher>` to acquire upstream distribution files.
+	- If this fails, you may need to manually look up release and mirror information for the desired distribution and provide the information with `--release` and `--mirror` flags.
+
+====
 
 Basic usage
 -----------
@@ -189,41 +218,11 @@ If you would like to specify which non-global file to read or write, prefix
 A concrete list of everything Bedrock can integrate, work-arounds for known
 limitations, and other useful information may be found at bedrocklinux.org.
 
-Hacking
--------
+===
 
-To sanity check your work (e.g. before upstream changes to Bedrock Linux),
-install:
+## Resources
 
-- shellcheck
-- cppcheck
-- clang
-- gcc
-- tcc
-- scan-build (usually distributed with clang)
-- shfmt (https://github.com/mvdan/sh)
-- indent (GNU)
-- uthash
-- libfuse3
-- libcap
-- libattr
-
-Run
-
-	make format
-
-to standardize the formatting of any changes you may have made, then run
-
-	make check
-
-to run various sanity checks against the code base.
-
-Where To Get Help
------------------
-
-- Website: https://bedrocklinux.org
-- IRC: `#bedrock` on irc.freenode.net
-	- https://webchat.freenode.net/?channels=bedrock
-- Forums: http://www.linuxquestions.org/questions/bedrock-linux-118
-- Reddit: http://reddit.com/r/bedrocklinux
-- Github: https://github.com/bedrocklinux
+- Website: WIP
+- IRC: WIP
+	- https://webchat.freenode.net/?channels=WIP
+- Github: https://github.com/WIP

@@ -1,28 +1,23 @@
 /*
- * bouncer.c
- *
- *      This program is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU General Public License
- *      version 2 as published by the Free Software Foundation.
- *
- * Copyright (c) 2017-2018 Daniel Thau <danthau@bedrocklinux.org>
- *
- * This program redirects to the specified executable in the specified stratum
- * via strat.  The appropriate stratum and executable are determined by the
- * 'user.bedrock_stratum' and 'user.bedrock_localpath' xattrs on
- * /proc/self/exe.
- *
- * This is preferable to a script such as
- *
- *     #!/bin/sh
- *     exec strat <stratum> <local-path> $@
- *
- * as it can pass its own argv[0] where as a hashbang loses this information.
- */
+bouncer.c
 
-#include <errno.h>
-#include <limits.h>
+	This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation.
+
+	Copyright (c) 2017-2018 Daniel Thau <danthau@bedrocklinux.org>
+	Copyright (c) 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+
+	This program redirects to the specified executable in the specified stratum via strat.  The appropriate stratum and executable are determined by the'user.bedrock_stratum' and 'user.bedrock_localpath' xattrs on /proc/self/exe.
+
+	This is preferable to a script such as
+
+		#!/bin/sh
+		exec strat <stratum> <local-path> $@
+
+	as it can pass its own argv[0] where as a hashbang loses this information.
+*/
+
 #include <linux/limits.h>
+#include <errno.h>
 #include <stdio.h>
 #include <sys/xattr.h>
 #include <unistd.h>

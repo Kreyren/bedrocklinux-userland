@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl alias
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Create stratum aliases.
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-alias' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-alias), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Create stratum aliases (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl alias ${color_sub}[options] <stratum> <alias>${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl alias ${color_sub}[options] <stratum> <alias>${color_norm}
 
 Creates an ${color_term}alias${color_norm}.  References to this ${color_term}alias${color_norm} can be used in place of the ${color_term}stratum${color_norm}
 name in most contexts.  Requires root.
@@ -59,4 +57,4 @@ fi
 
 ln -s "${stratum}" "/bedrock/strata/${alias}"
 
-exit_success
+die 0

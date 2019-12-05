@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl copy
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Copies strata.
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-copy' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-copy), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Copies strata (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl copy ${color_sub}[options] <stratum> <new-stratum>${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl copy ${color_sub}[options] <stratum> <new-stratum>${color_norm}
 
 Copies a disabled ${color_term}stratum${color_norm}.  Requires root.
 
@@ -64,4 +62,4 @@ for xattr in "show_boot" "show_cross" "show_init" "show_list"; do
 	fi
 done
 
-exit_success
+die 0

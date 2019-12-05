@@ -1,4 +1,5 @@
 #!/bedrock/libexec/busybox sh
+# shellcheck shell=sh
 #
 # Artix Linux bootstrap support
 #
@@ -9,8 +10,12 @@
 # Copyright (c) 2016-2019 Daniel Thau <danthau@bedrocklinux.org>
 #
 
+# This is sourced by brl-fetch -> source for checks
 # shellcheck source=src/slash-bedrock/libexec/brl-fetch
-. /bedrock/share/common-code
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 trap 'fetch_abort "Unexpected error occurred."' EXIT
 
 check_supported() {
@@ -99,7 +104,7 @@ fetch() {
 
 	step "Extracting bootstrap packages"
 	bootstrap_packages="$(awk -v"d=${cache}/packages/" '{sub(/^.*\//,d);print $1}' "${bootstrap_dir}/required_packages")"
-	extract_pacman_pkgs "${bootstrap_dir}" ${bootstrap_packages}
+	extract_pacman_pkgs "${bootstrap_dir}" "${bootstrap_packages}"
 
 	step "Running bootstrap software"
 	# pacstrap mounts devtmpfs (which is shared with the host system) and

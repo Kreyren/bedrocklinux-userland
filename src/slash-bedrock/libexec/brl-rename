@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl rename
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2016-2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Renames strata and aliases.
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-rename' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-rename), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Renames strata and aliases (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "
+	printf '%s\n' "
 Usage: ${color_cmd}brl rename ${color_sub}[options] <stratum> <new-name>${color_norm}
 
 Renames ${color_term}strata${color_norm} and ${color_term}aliases${color_norm}.  Requires root.  Can only be applied to ${color_term}disabled${color_norm}
@@ -60,4 +58,4 @@ if is_stratum "${stratum}"; then
 fi
 mv "/bedrock/strata/${stratum}" "/bedrock/strata/${new_name}"
 
-exit_success
+die 0

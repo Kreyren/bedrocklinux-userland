@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl tutorial
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2019 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Create stratum aliases.
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-tutorial' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-tutorial), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Create stratum aliases (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl tutorial${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl tutorial${color_norm}
 
 Provides an tour of Bedrock Linux features suitable for new users.
 
@@ -26,12 +24,14 @@ Examples:
 ${color_norm}"
 }
 
+# QA: wtf
 cmd() {
-	printf "\t${color_cmd}\$ $@${color_norm}"
+	printf "\\t$color_cmd\\$ %s$color_norm\\n" "$*"
 }
 
+# QA: wtf
 rcmd() {
-	printf "\t${color_alert}# $@${color_norm}"
+	printf "\\t$color_alert# %s$color_norm\\n" "$*"
 }
 
 lesson() {
@@ -44,8 +44,8 @@ lesson() {
 
 	clear
 	step "Lesson: ${title}"
-	printf "${text}"
-	echo ""
+	printf '%s\n' "${text}"
+
 	if [ -n "${condition:-}" ]; then
 		while ! sh -c "${condition}" >/dev/null 2>&1; do
 			cursor="$((cursor + 1))"
@@ -53,31 +53,33 @@ lesson() {
 				cursor=1
 			fi
 			c="$(echo "${spinner}" | head -c "${cursor}" | tail -c1)"
-			printf "\r[Run specified commands to continue ${c}]"
+			printf '%s\n' "\r[Run specified commands to continue ${c}]"
 			sleep 1
 		done
 	else
-		printf "[Press ${color_cmd}<ENTER>${color_norm} to continue]"
-		read PAUSE
+		printf '%s\n' "[Press ${color_cmd}<ENTER>${color_norm} to continue]"
+		# shellcheck disable=SC2034
+		read -r PAUSE
 	fi
 	printf "\n"
 }
 
 # Create variables representing colorized versions of common terms
+# QA: Verify commented out variables since they are not used
 stratum="${color_term}stratum${color_norm}"
 strata="${color_term}strata${color_norm}"
 Strata="${color_term}Strata${color_norm}"
 enabled="${color_term}enabled${color_norm}"
-disabled="${color_term}disabled${color_norm}"
+#disabled="${color_term}disabled${color_norm}"
 global="${color_term}global${color_norm}"
 local="${color_term}local${color_norm}"
 cross="${color_term}cross${color_norm}"
 restriction="${color_term}restriction${color_norm}"
 restrict="${color_term}restrict${color_norm}"
-enable="${color_term}enable${color_norm}"
+#enable="${color_term}enable${color_norm}"
 enabled="${color_term}enable${color_norm}"
 disable="${color_term}disable${color_norm}"
-disabled="${color_term}disabled${color_norm}"
+#disabled="${color_term}disabled${color_norm}"
 hijacked="${color_term}hijacked${color_norm}"
 hijack="${color_term}hijack${color_norm}"
 Bedrock_Linux="${color_bedrock}Bedrock Linux${color_norm}"
@@ -90,8 +92,9 @@ Ubuntu="${color_distro}Ubuntu${color_norm}"
 Void="${color_distro}Void${color_norm}"
 tut_alpine="${color_strat}tut-alpine${color_norm}"
 tut_void="${color_strat}tut-void${color_norm}"
-tut_void_musl="${color_strat}tut-void-musl${color_norm}"
+#tut_void_musl="${color_strat}tut-void-musl${color_norm}"
 init_stratum="${color_strat}$(brl deref init)${color_norm}"
+# QA: WHY ARE YOU MAKING ME SUFFER ( F I X M E )
 if hijacked_stratum="$(brl deref hijacked)"; then
 	hijacked_stratum="${color_strat}${hijacked_stratum}${color_norm}"
 fi
@@ -164,7 +167,7 @@ to see a list of ${strata} currently being integrated together.
 
 $(
 	if [ "$(brl list | wc -l)" -le 2 ]; then
-		printf "This appears to be a fresh Bedrock Linux install with two ${strata}:
+		printf '%s\n' "This appears to be a fresh Bedrock Linux install with two ${strata}:
 
 - ${bedrock}, which is the ${stratum} providing ${Bedrock}-specific functionality.
 - $init_stratum} which provides everything else.
@@ -172,7 +175,7 @@ $(
 This isn't much more interesting than ${init_stratum} would have been by itself.
 "
 	else
-		printf "This system appears to already have a number of ${strata}, including:
+		printf '%s\n' "This system appears to already have a number of ${strata}, including:
 
 - ${bedrock}, which is the ${stratum} providing ${Bedrock}-specific functionality.
 - ${init_stratum}, which is currently providing your init system.
@@ -250,7 +253,7 @@ $(cmd "brl which xbps-install")
 What about commands that multiple ${strata} - ${bedrock}, ${tut_alpine}, ${tut_void},
 $(
 	if strat -r init /bedrock/libexec/busybox which ls >/dev/null 2>&1; then
-		printf "${init_stratum}, "
+		printf '%s\n' "${init_stratum}, "
 	fi
 )etc - all provide, such as ${ls}?
 
@@ -435,7 +438,7 @@ The ${bedrock} ${stratum} glues the entire system together.  It is the only
 ${stratum} which may not be removed.
 $(
 	if brl deref hijacked >/dev/null 2>&1; then
-		printf "
+		printf '%s\n' "
 When ${Bedrock} ${hijacked} this computer, it:
 
 - Moved the previous install files elsewhere.
@@ -476,7 +479,7 @@ $(cmd "brl --help")
 
 $(
 	if [ "$(cfg_value "miscellaneous" "color")" = "true" ]; then
-		printf "and notice how pretty and colorful the output is.
+		printf '%s\n' "and einfo how pretty and colorful the output is.
 Now open ${bedrock_etc_bedrock_conf} and find
 
 	${color_file}color = true${color_norm}
@@ -493,10 +496,10 @@ Now run
 
 $(cmd "brl --help")
 
-and notice how boring and monotone the output is.
+and einfo how boring and monotone the output is.
 "
 	else
-		printf "and notice how boring and monotone the output is.
+		printf '%s\n' "and notice how boring and monotone the output is.
 Now open ${bedrock_etc_bedrock_conf} and find
 
 	${color_file}color = [...]${color_norm}
@@ -513,7 +516,7 @@ Now run
 
 $(cmd "brl --help")
 
-and notice how pretty and colorful the output is.
+and einfo how pretty and colorful the output is.
 "
 	fi
 )
@@ -538,6 +541,6 @@ and reading through ${bedrock_etc_bedrock_conf}.
 "
 
 clear
-printf "This completes the ${brl_tutorial}.\n"
+printf '%s\n' "This completes the ${brl_tutorial}.\n"
 
-exit_success
+die 0

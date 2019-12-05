@@ -1,0 +1,35 @@
+name: NAME-ME
+
+on: [push]
+
+# ABADONED - Unable to get fuse3 in CI
+
+# TODO
+## Change profile photo of this CI
+## Greet end-user submiting merge request that is not in blacklist (blacklist used for trusted devs) with message ensuring QA
+## Greet end-user submiting merge request with checklist
+## Adapt lable handling
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    #- name: Fixing Microsoft's incompetence
+    #  run: sudo find /etc/apt/ -type f -name '*.list' -exec sed -i s/bionic/disco/ {} \; ; printf '%s\n' "Current list is set as" ; find /etc/apt/ -type f -name '*.list' -exec grep -oP "^deb[^\n]+" {} \;
+      #run: sudo find /etc/apt/ -name *.list -type f -exec printf '%s\n' 's%/buster/disco/g w | ed -s "{}" \;
+      #run: sudo apt-cache search fuse ; exit 1
+    - name: Fix Microsoft pebcaks
+      run: sudo find /etc/apt/ -name *.list -type f -exec rm {} \; && sudo printf '%s\n' "deb http://ppa.launchpad.net/hvr/ghc/ubuntu bionic main universe multiverse" "deb http://ppa.launchpad.net/apt-fast/stable/ubuntu bionic main universe multiverse" "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" "deb https://dl.bintray.com/sbt/debian /" "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" "deb https://dl.yarnpkg.com/debian/ stable main" "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main" "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu bionic main" "deb http://apt.kubernetes.io/ kubernetes-xenial main" "deb http://ppa.launchpad.net/git-core/ppa/ubuntu bionic main" "deb https://packagecloud.io/github/git-lfs/ubuntu/ bionic main" "deb-src https://packagecloud.io/github/git-lfs/ubuntu/ bionic main" "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" "deb http://ppa.launchpad.net/ondrej/php/ubuntu bionic main" > /etc/apt/sources.list && sudo apt update && sudo apt upgrade -y && sudo apt dist-upgrade -y
+    - name: Updating Microsoft's incompetence
+      # Ignore issues with apt update missing release files since Microsoft's 3rd party repositories are 100years behind again
+      run: sudo apt update ; sudo apt upgrade -y && sudo apt dist-upgrade -y
+    - name: Complaining about Microsoft's incompetence even more
+      run: printf '%s\n' "According to post-Microsoft GitHub, Inc. The Latest ubuntu release is bionic in 2019" "When do i get more distros to run QA on? Even blank VM that i can configure for deploy would be much better"
+    - name: Install dependencies
+      run: sudo apt-get install meson cppcheck clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot uthash-dev gzip rsync autopoint shellcheck -y && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
+    - uses: actions/checkout@v1
+    #- name: Compile
+      # Disable signature for tests
+    #  run: CFLAGS="-O3 --pipe" make SKIPSIGN=true --jobs
+    - name: Lint
+      run: make check

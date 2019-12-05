@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl which
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2012-2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Indicates which stratum provides a given object
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-which' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-which), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Indicates which stratum provides a given object (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl which ${color_sub}[option] [identifier]${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl which ${color_sub}[option] [identifier]${color_norm}
 
 Indicates which ${color_term}stratum${color_norm} provides a given object.
 
@@ -51,9 +49,9 @@ ${color_norm}"
 }
 
 which_current() {
-	printf "${color_strat}"
+	printf '%s\n' "${color_strat}"
 	get_attr "/" "stratum"
-	printf "${color_norm}"
+	printf '%s\n' "${color_norm}"
 }
 
 which_bin() {
@@ -72,17 +70,17 @@ which_file() {
 		if ! [ -e "${1}" ]; then
 			abort "no file at \`${1}\`"
 		elif has_attr "${1}" "stratum"; then
-			printf "${color_strat}"
+			printf '%s\n' "${color_strat}"
 			get_attr "${1}" "stratum"
-			printf "${color_norm}"
+			printf '%s\n' "${color_norm}"
 		elif realpath "${1}" | grep -q '^/bedrock/strata/.'; then
-			printf "${color_strat}"
+			printf '%s\n' "${color_strat}"
 			realpath "${1}" | cut -d/ -f4
-			printf "${color_norm}"
+			printf '%s\n' "${color_norm}"
 		elif [ "$(stat "${1}" 2>/dev/null | awk 'NR>1')" = "$(/bedrock/bin/strat bedrock /bedrock/libexec/busybox stat "${1}" 2>/dev/null | awk 'NR>1')" ]; then
-			printf "${color_strat}"
+			printf '%s\n' "${color_strat}"
 			echo "global"
-			printf "${color_norm}"
+			printf '%s\n' "${color_norm}"
 		else
 			which_current
 		fi
@@ -103,9 +101,9 @@ which_pid() {
 		# process is in the init stratum.
 		if [ "${init_view}" = "${stratum_view}" ]; then
 			# Report the name of the init stratum
-			printf "${color_strat}"
+			printf '%s\n' "${color_strat}"
 			deref init
-			printf "${color_norm}"
+			printf '%s\n' "${color_norm}"
 		else
 			# Must be in a stratum other than init
 			#
@@ -119,9 +117,9 @@ which_pid() {
 			#
 			# Thus, the fourth field will be the stratum.  Forward slashes
 			# are not allowed in Linux file names.
-			printf "${color_strat}"
+			printf '%s\n' "${color_strat}"
 			echo "${init_view}" | cut -d'/' -f4
-			printf "${color_norm}"
+			printf '%s\n' "${color_norm}"
 		fi
 		shift
 	done
@@ -172,4 +170,4 @@ case "${1:-}" in
 	;;
 esac
 
-exit_success
+die 0

@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl deref
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Dereference stratum aliases.
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-deref' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-deref), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Dereference stratum aliases (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl deref ${color_sub}[options] <strata>${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl deref ${color_sub}[options] <strata>${color_norm}
 
 Dereferences ${color_term}aliases${color_norm}.  Dereferencing a non-${color_term}alias${color_norm} ${color_term}stratum${color_norm} returns the ${color_term}stratum${color_norm}.
 
@@ -49,4 +47,4 @@ for alias in "${@}"; do
 	fi
 done
 
-exit_success
+die 0

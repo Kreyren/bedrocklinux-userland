@@ -1,22 +1,19 @@
 #!/bin/sh
-#
-# installer.sh
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Installs or updates a Bedrock Linux system.
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-fetch' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/installer/installer.sh), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code # replace with file content during build process
+# Installs bedrock linux (?)
 
-ARCHITECTURE= # replace with build target CPU architecture during build process
-TARBALL_SHA1SUM= # replace with tarball sha1sum during build process
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
+ARCHITECTURE="" # replace with build target CPU architecture during build process
+TARBALL_SHA1SUM="" # replace with tarball sha1sum during build process
 
 print_help() {
-	printf "Usage: ${color_cmd}${0} ${color_sub}<operations>${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}${0} ${color_sub}<operations>${color_norm}
 
 Install or update a Bedrock Linux system.
 
@@ -75,7 +72,7 @@ sanity_check_grub_mkrelpath() {
 }
 
 hijack() {
-	printf "\
+	printf '%s\n' "\
 ${color_priority}* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *${color_norm}
 ${color_priority}*${color_alert}                                                               ${color_priority}*${color_norm}
 ${color_priority}*${color_alert} Continuing will:                                              ${color_priority}*${color_norm}
@@ -179,27 +176,27 @@ Please type \"Not reversible!\" without quotes at the prompt to continue:
 		name="hijacked"
 	fi
 	ensure_legal_stratum_name "${name}"
-	notice "Using ${color_strat}${name}${color_norm} for initial stratum"
+	einfo "Using ${color_strat}${name}${color_norm} for initial stratum"
 
 	if ! [ -r "/sbin/init" ]; then
 		abort "No file detected at /sbin/init.  Unable to hijack init system."
 	fi
-	notice "Using ${color_strat}${name}${color_glue}:${color_cmd}/sbin/init${color_norm} as default init selection"
+	einfo "Using ${color_strat}${name}${color_glue}:${color_cmd}/sbin/init${color_norm} as default init selection"
 
 	localegen=""
 	if [ -r "/etc/locale.gen" ]; then
 		localegen="$(awk '/^[^#]/{printf "%s, ", $0}' /etc/locale.gen | sed 's/, $//')"
 	fi
 	if [ -n "${localegen:-}" ] && echo "${localegen}" | grep -q ","; then
-		notice "Discovered multiple locale.gen lines"
+		einfo "Discovered multiple locale.gen lines"
 	elif [ -n "${localegen:-}" ]; then
-		notice "Using ${color_file}${localegen}${color_norm} for ${color_file}locale.gen${color_norm} language"
+		einfo "Using ${color_file}${localegen}${color_norm} for ${color_file}locale.gen${color_norm} language"
 	else
-		notice "Unable to determine locale.gen language, continuing without it"
+		einfo "Unable to determine locale.gen language, continuing without it"
 	fi
 
 	if [ -n "${LANG:-}" ]; then
-		notice "Using ${color_cmd}${LANG}${color_norm} for ${color_cmd}\$LANG${color_norm}"
+		einfo "Using ${color_cmd}${LANG}${color_norm} for ${color_cmd}\$LANG${color_norm}"
 	fi
 
 	timezone=""
@@ -213,9 +210,9 @@ Please type \"Not reversible!\" without quotes at the prompt to continue:
 		timezone="$(find /usr/share/zoneinfo -type f -exec sha1sum {} \; 2>/dev/null | awk -v"l=$(sha1sum /etc/localtime | cut -d' ' -f1)" '$1 == l {print$NF;exit}' | sed 's,/usr/share/zoneinfo/,,')"
 	fi
 	if [ -n "${timezone:-}" ]; then
-		notice "Using ${color_file}${timezone}${color_norm} for timezone"
+		einfo "Using ${color_file}${timezone}${color_norm} for timezone"
 	else
-		notice "Unable to automatically determine timezone, continuing without it"
+		einfo "Unable to automatically determine timezone, continuing without it"
 	fi
 
 	step "Hijacking init system"
@@ -240,11 +237,11 @@ Please type \"Not reversible!\" without quotes at the prompt to continue:
 
 	step "Configuring"
 
-	notice "Configuring ${color_strat}bedrock${color_norm} stratum"
+	einfo "Configuring ${color_strat}bedrock${color_norm} stratum"
 	set_attr "/" "stratum" "bedrock"
 	set_attr "/" "arch" "${ARCHITECTURE}"
 	set_attr "/bedrock/strata/bedrock" "stratum" "bedrock"
-	notice "Configuring ${color_strat}${name}${color_norm} stratum"
+	einfo "Configuring ${color_strat}${name}${color_norm} stratum"
 	mkdir -p "/bedrock/strata/${name}"
 	if [ "${name}" != "hijacked" ]; then
 		ln -s "${name}" /bedrock/strata/hijacked
@@ -256,7 +253,7 @@ Please type \"Not reversible!\" without quotes at the prompt to continue:
 		set_attr "${dir}" "show_list" ""
 	done
 
-	notice "Configuring ${color_file}bedrock.conf${color_norm}"
+	einfo "Configuring ${color_file}bedrock.conf${color_norm}"
 	mv /bedrock/etc/bedrock.conf-* /bedrock/etc/bedrock.conf
 	sha1sum </bedrock/etc/bedrock.conf >/bedrock/var/conf-sha1sum
 
@@ -275,7 +272,7 @@ Please type \"Not reversible!\" without quotes at the prompt to continue:
 		mv /bedrock/etc/bedrock.conf-new /bedrock/etc/bedrock.conf
 	fi
 
-	notice "Configuring ${color_file}/etc/fstab${color_norm}"
+	einfo "Configuring ${color_file}/etc/fstab${color_norm}"
 	if [ -r /etc/fstab ]; then
 		awk '$1 !~ /^#/ && NF >= 6 {$6 = "0"} 1' /etc/fstab >/etc/fstab-new
 		mv /etc/fstab-new /etc/fstab
@@ -286,7 +283,7 @@ Please type \"Not reversible!\" without quotes at the prompt to continue:
 		grep -q 'splash' /boot/grub/grub.cfg && \
 		type grub-mkconfig >/dev/null 2>&1; then
 
-		notice "Configuring bootloader"
+		einfo "Configuring bootloader"
 		sed 's/splash//g' /etc/default/grub > /etc/default/grub-new
 		mv /etc/default/grub-new /etc/default/grub
 		grub-mkconfig -o /boot/grub/grub.cfg
@@ -294,9 +291,9 @@ Please type \"Not reversible!\" without quotes at the prompt to continue:
 
 	step "Finalizing"
 	touch "/bedrock/complete-hijack-install"
-	notice "Reboot to complete installation"
-	notice "After reboot explore the ${color_cmd}brl${color_norm} command"
-	notice "and ${color_file}/bedrock/etc/bedrock.conf${color_norm} configuration file."
+	einfo "Reboot to complete installation"
+	einfo "After reboot explore the ${color_cmd}brl${color_norm} command"
+	einfo "and ${color_file}/bedrock/etc/bedrock.conf${color_norm} configuration file."
 }
 
 update() {
@@ -342,11 +339,11 @@ update() {
 	fi
 
 	if ver_cmp_first_newer "${new_version}" "${current_version}"; then
-		notice "Updating from ${current_version} to ${new_version}"
+		einfo "Updating from ${current_version} to ${new_version}"
 	elif [ "${new_version}" = "${current_version}" ]; then
-		notice "Re-installing ${current_version} over same version"
+		einfo "Re-installing ${current_version} over same version"
 	else
-		notice "Downgrading from ${current_version} to ${new_version}"
+		einfo "Downgrading from ${current_version} to ${new_version}"
 	fi
 
 	step "Running pre-install steps"
@@ -459,26 +456,26 @@ update() {
 	fi
 
 
-	notice "Successfully updated to ${new_version}"
+	einfo "Successfully updated to ${new_version}"
 	new_crossfs=false
 	new_etcfs=false
 
 	if ver_cmp_first_newer "0.7.0beta3" "${current_version}"; then
 		new_crossfs=true
-		notice "Added brl-fetch-mirrors section to bedrock.conf.  This can be used to specify preferred mirrors to use with brl-fetch."
+		einfo "Added brl-fetch-mirrors section to bedrock.conf.  This can be used to specify preferred mirrors to use with brl-fetch."
 	fi
 
 	if ver_cmp_first_newer "0.7.0beta4" "${current_version}"; then
 		new_crossfs=true
 		new_etcfs=true
-		notice "Added ${color_cmd}brl copy${color_norm}."
-		notice "${color_alert}New, required section added to bedrock.conf.  Merge new config with existing and reboot.${color_norm}"
+		einfo "Added ${color_cmd}brl copy${color_norm}."
+		einfo "${color_alert}New, required section added to bedrock.conf.  Merge new config with existing and reboot.${color_norm}"
 	fi
 
 	if ver_cmp_first_newer "0.7.0beta6" "${current_version}"; then
 		new_etcfs=true
-		notice "Reworked ${color_cmd}brl retain${color_norm} options."
-		notice "Made ${color_cmd}brl status${color_norm} more robust.  Many strata may now report as broken.  Reboot to remedy."
+		einfo "Reworked ${color_cmd}brl retain${color_norm} options."
+		einfo "Made ${color_cmd}brl status${color_norm} more robust.  Many strata may now report as broken.  Reboot to remedy."
 	fi
 
 	if ver_cmp_first_newer "0.7.2" "${current_version}"; then
@@ -508,15 +505,15 @@ update() {
 	fi
 
 	if "${new_crossfs}"; then
-		notice "Updated crossfs.  Cannot restart Bedrock FUSE filesystems live.  Reboot to complete change."
+		einfo "Updated crossfs.  Cannot restart Bedrock FUSE filesystems live.  Reboot to complete change."
 	fi
 	if "${new_etcfs}"; then
-		notice "Updated etcfs.  Cannot restart Bedrock FUSE filesystems live.  Reboot to complete change."
+		einfo "Updated etcfs.  Cannot restart Bedrock FUSE filesystems live.  Reboot to complete change."
 	fi
 	if "${new_conf}"; then
-		notice "New reference configuration created at ${color_file}/bedrock/etc/bedrock.conf-${new_version}${color_norm}."
-		notice "Compare against ${color_file}/bedrock/etc/bedrock.conf${color_norm} and consider merging changes."
-		notice "Remove ${color_file}/bedrock/etc/bedrock.conf-${new_version}${color_norm} at your convenience."
+		einfo "New reference configuration created at ${color_file}/bedrock/etc/bedrock.conf-${new_version}${color_norm}."
+		einfo "Compare against ${color_file}/bedrock/etc/bedrock.conf${color_norm} and consider merging changes."
+		einfo "Remove ${color_file}/bedrock/etc/bedrock.conf-${new_version}${color_norm} at your convenience."
 	fi
 }
 

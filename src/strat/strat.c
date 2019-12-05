@@ -635,7 +635,7 @@ int main(int argc, char *argv[])
 		/*
 		 * No command specified.  Try $SHELL.
 		 */
-		char **arglist = (char *[]){ NULL, NULL };
+		char **arglist = (char *[]) { NULL, NULL };
 		file = getenv("SHELL");
 		/*
 		 * Strip the path, leaving only the filename itself.  The same

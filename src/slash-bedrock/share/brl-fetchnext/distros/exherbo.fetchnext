@@ -1,0 +1,48 @@
+#!/bin/s2h
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'exherbo' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/share/brl-fetch/exherbo), which is:
+# 		Copyright 2018 Jacob Hrbek <kreyren@rixotstudio.cz> as GPLv2
+# 		Broken by 2019 Wulf C. Krueger <philantrop@exherbo.org> under fuckyoukreyren license
+
+# This is sourced by brl-fetch -> source for checks
+# shellcheck source=src/slash-bedrock/libexec/brl-fetch
+
+die fixme "This is pseudo-code developing a backend, DO NOT USE!!!"
+
+# METADATA
+NAME="Exherbo Linux"
+DOWNLOAD=https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-gnu-current.tar.xz
+HOMEPAGE=https://exherbo.org/
+
+bin_fetch() {
+	# Export tarball
+	if [ ! "$stratdir/$stratname/etc/paludis" ]; then
+		# Cache tarball
+		if [ ! -e "https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-gnu-current.tar.xz" ]; then
+			# TODO: Implement logic to download a file using wget, curl, aria2c, fetch, etc.. depending on what is present
+			downloader "https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-gnu-current.tar.xz" -O "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz"
+
+			# Self-check
+			if [ -e "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz" ]; then
+				debug "Downloading of file 'exherbo-x86_64-pc-linux-gnu-current.tar.xz' has been verified"
+
+				# TODO: Run checksum check
+				checksum "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz" "some checksum here"
+
+				# TODO: Run virustotal check
+			fi
+		elif [ -e "https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-gnu-current.tar.xz" ]; then
+			debug "File 'exherbo-x86_64-pc-linux-gnu-current' is already cached, no need to download it"
+		else
+			die 255 "Caching of 'exherbo-x86_64-pc-linux-gnu-current'"
+		fi
+
+		extractor "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz"
+	elif [ "$stratdir/$stratname/etc/paludis" ]; then
+		debug "file .. exists, no need to extract it"
+	fi
+}
+
+
+# User modification

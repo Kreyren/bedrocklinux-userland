@@ -1,19 +1,17 @@
 #!/bedrock/libexec/busybox sh
-#
-# brl list
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2012-2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# List strata and aliases.
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-list' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-list), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# List strata and aliases (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl list ${color_sub}[options]${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl list ${color_sub}[options]${color_norm}
 
 Lists ${color_term}strata${color_norm}.
 
@@ -154,4 +152,4 @@ fi
 	fi
 done
 
-exit_success
+die 0

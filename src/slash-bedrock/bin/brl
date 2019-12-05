@@ -1,20 +1,17 @@
-#!/bedrock/libexec/busybox sh
-#
-# brl
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2012-2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# This program manages and provides information about a Bedrock Linux install
-# and its subsystems.
+#!/bin/sh
+# shellcheck shell=sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-fetch' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/bin/brl), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
+filename="${0##*/}"
 
 print_help() {
-	printf "Usage: ${color_cmd}brl ${color_sub}<command> [arguments]${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl ${color_sub}<command> [arguments]${color_norm}
 
 ${color_bedrock}Bedrock Linux${color_norm} system management and introspection.
 
@@ -55,20 +52,19 @@ See ${color_cmd}\`brl ${color_sub}<command>${color_cmd} --help\`${color_norm} fo
 "
 }
 
-case "${1:-}" in
-"-h" | "--help" | "help" | "")
-	print_help
-	exit_success
-	;;
-"strat" | "list" | "which" | "fetch" | "remove" | "rename" | "copy" | "status" | "enable" | "disable" | "repair" | "hide" | "show" | "alias" | "deref" | "apply" | "update" | "version" | "report" | "tutorial")
-	backend="/bedrock/libexec/brl-${1}"
-	shift
-	exec "${backend}" "${@}"
-	abort "Unable to execute \`${backend}\`"
-	;;
-*)
-	abort "Unrecognized brl subcommand.  See \`${0} --help\`"
-	;;
-esac
+args="$1"
 
-exit_success
+while [ $# -gt 1 ]; do case "${args:-}" in
+	"strat" | "list" | "which" | "fetch" | "remove" | "rename" | "copy" | "status" | "enable" | "disable" | "repair" | "hide" | "show" | "alias" | "deref" | "apply" | "update" | "version" | "report" | "tutorial")
+		backend="/bedrock/libexec/$filename-$args"
+		shift 1
+		exec "/bedrock/libexec/$filename-$args" "$backend" "$@" || die 1 "$filename has been unable to process $*"
+	;;
+	"-h" | "--help" | "help" | "")
+		print_help
+		die 0
+	;;
+	*)
+		printf_help
+		die 2 "Unknown argument has been parsed in $filename - $args"
+esac; done
