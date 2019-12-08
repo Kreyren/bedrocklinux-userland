@@ -1,6 +1,6 @@
 # (WIP name)
 
-![image](https://user-images.githubusercontent.com/11302521/69683941-e167f400-10b6-11ea-86a7-7bc842f40d5d.png)
+![image](kreyrock_anubis_frontimg.png)
 
 WORK IN PROGRESS, USE ON YOUR OWN RISK!
 
