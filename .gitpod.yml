@@ -9,3 +9,7 @@ ports:
 tasks:
 - init: echo 'init script' # runs during prebuild
   command: echo 'start script'
+
+vscode:
+  extensions:
+    - timonwong.shellcheck@0.8.1:16BMw7Jrwd/KkAhJrkHwqQ==
