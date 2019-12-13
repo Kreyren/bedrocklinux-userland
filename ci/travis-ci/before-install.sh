@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1117
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 # Based in part upon 'before-install' from rsplib	(https://raw.githubusercontent.com/dreibh/rsplib/master/ci/before-install), which is:
@@ -9,6 +10,8 @@
 
 # shellcheck source=ci/travis-ci/get-container.sh
 . "$(dirname "$0")/get-container.sh"
+
+fixme "Travis - before-install.sh disables SC1117 as hotfix"
 
 # Linux as-is
 if [ "$TRAVIS_OS_NAME" = linux ] && [ -z "$DOCKER" ] && [ -z "$QEMU" ]; then

@@ -1,5 +1,4 @@
-#!/bedrock/libexec/busybox sh
-# shellcheck shell=sh
+#!/bin/sh
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 # Inspired in part upon 'emmett1' from Venom Linux (https://venomlinux.org/), which is:

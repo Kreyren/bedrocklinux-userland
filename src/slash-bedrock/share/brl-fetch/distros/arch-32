@@ -1,5 +1,4 @@
-#!/bedrock/libexec/busybox sh
-# shellcheck shell=sh
+#!/bin/sh
 #
 # Arch Linux 32 bootstrap support
 #

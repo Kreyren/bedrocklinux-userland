@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1117
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 # Based in part upon 'install.sh' from rsplib (https://raw.githubusercontent.com/dreibh/rsplib/master/ci/install), which is:
@@ -9,6 +10,8 @@
 
 # shellcheck source=ci/travis-ci/get-container.sh
 . "$(dirname "$0")/get-container.sh"
+
+fixme "Travis - install.sh is disabling SC1117 as hotfix"
 
 # QA: Why US mirror?
 UBUNTU_MIRROR="us.archive.ubuntu.com"

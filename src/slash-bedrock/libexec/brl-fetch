@@ -1,5 +1,4 @@
-#!/bedrock/libexec/busybox sh
-# shellcheck shell=sh
+#!/bin/sh
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 # Based in part upon 'brl-fetch' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-fetch), which is:
@@ -1147,7 +1146,7 @@ for distro in ${distros}; do
 	mkdir -p "${target_dir}"
 	drop_lock
 
-	steps="$(grep -c "^[[:space:]]*step\>" "${backend}")"
+	steps="$(grep -c "^[[:space:]]*step\\>" "${backend}")"
 	steps="$((steps + 9))"
 	if ! "${flag_dont_show}"; then
 		steps=$((steps + 1))

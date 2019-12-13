@@ -1,7 +1,7 @@
 #!/bin/sh
-# shellcheck shell=sh
 # shellcheck disable=SC2119
 # shellchck disable=SC2154
+# shellcheck disable=SC1117
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 # Based in part upon 'common-code' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/share/common-code), which is:
@@ -19,6 +19,8 @@
 
 # shellcheck source=src/slash-bedrock/lib/shell/maintainer.sh
 . /bedrock/lib/shell/maintainer.sh
+
+fixme "Common code needs refractor for SC1117, currently disabled as HOTFIX"
 
 # Do not allow changes on runtime (?)
 #umask 022

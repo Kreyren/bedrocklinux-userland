@@ -132,7 +132,7 @@ die() { # Used to exit a program with a message
 			elif [ -z "$message" ]; then
 				# QA: Is this safe to ignore using variables in printf format?
 				# shellcheck disable=SC2059
-				printf "${color_alert}FATAL: %s$color_norm\\n" "Script returned false $([ -n "$(id -u)" ] && printf "from EUID '$(id -u)'")\n" 1>&2 ; exit 1
+				printf "${color_alert}FATAL: %s$color_norm\\n" "Script returned false" 1>&2 ; exit 1
 			else
 				die 255 "die 1"
 			fi
@@ -144,7 +144,7 @@ die() { # Used to exit a program with a message
 				exit 2
 			elif [ -z "$message" ]; then
 				trap '' EXIT
-				printf "${color_alert}FATAL: %s$color_norm\\n" "Syntax error $([ -n "$debug" ] && printf '%s\n' "$0 $err_code $message $3")\n" 1>&2
+				printf "${color_alert}FATAL: %s$color_norm\\n" "Syntax error $([ -n "$debug" ] && printf '%s\n' "$0 $err_code $message $3")" 1>&2
 				exit 2
 			else
 				die 255 "die 2"
@@ -178,7 +178,7 @@ die() { # Used to exit a program with a message
 			exit 255
 		;;
     ping)
-			printf "${color_alert}FATAL: %s$color_norm\\n" "Killed by ping\n"
+			printf "${color_alert}FATAL: %s$color_norm\\n" "Killed by ping"
 			exit 1
 		;;
 		fetch_abort) # Originally 'fetch_abort()'

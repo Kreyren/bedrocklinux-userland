@@ -1,5 +1,4 @@
-#!/bedrock/libexec/busybox sh
-# shellcheck shell=sh
+#!/bin/sh
 #
 # Debian bootstrap support
 #
@@ -28,6 +27,7 @@ speed_test_url() {
 
 list_mirrors() {
 	mirror_list_url='https://www.debian.org/mirror/list'
+    # shellcheck disable=SC1117
 	wget -O- "${mirror_list_url}" 2>/dev/null |
 		awk '/Primary Debian mirror sites/,/<\/div/' |
 		grep -B3 "\<${distro_arch}\>" |

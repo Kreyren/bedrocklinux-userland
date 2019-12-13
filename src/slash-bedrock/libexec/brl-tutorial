@@ -1,5 +1,4 @@
-#!/bedrock/libexec/busybox sh
-# shellcheck shell=sh
+#!/bin/sh
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 # Based in part upon 'brl-tutorial' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-tutorial), which is:
@@ -53,7 +52,7 @@ lesson() {
 				cursor=1
 			fi
 			c="$(echo "${spinner}" | head -c "${cursor}" | tail -c1)"
-			printf '%s\n' "\r[Run specified commands to continue ${c}]"
+			printf '%s\n' "\\r[Run specified commands to continue ${c}]"
 			sleep 1
 		done
 	else
@@ -61,7 +60,6 @@ lesson() {
 		# shellcheck disable=SC2034
 		read -r PAUSE
 	fi
-	printf "\n"
 }
 
 # Create variables representing colorized versions of common terms
@@ -541,6 +539,6 @@ and reading through ${bedrock_etc_bedrock_conf}.
 "
 
 clear
-printf '%s\n' "This completes the ${brl_tutorial}.\n"
+printf '%s\n' "This completes the ${brl_tutorial}."
 
 die 0

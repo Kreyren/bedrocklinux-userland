@@ -1,5 +1,4 @@
-#!/bedrock/libexec/busybox sh
-# shellcheck shell=sh
+#!/bin/sh
 #
 # Ubuntu bootstrap support
 #
@@ -147,7 +146,7 @@ fetch() {
 	fi
 
 	step "Configuring"
-	if grep -q "\<main\>" "${target_dir}/etc/apt/sources.list" && ! grep -q "\<universe\>" "${target_dir}/etc/apt/sources.list"; then
+	if grep -q '<main\>' "${target_dir}/etc/apt/sources.list" && ! grep -q '<universe\>' "${target_dir}/etc/apt/sources.list"; then
 		# universe contains locales-all package needed below
 		sed 's/\<main\>/main universe/' "${target_dir}/etc/apt/sources.list" >"${target_dir}/etc/apt/sources.list-new"
 		mv "${target_dir}/etc/apt/sources.list-new" "${target_dir}/etc/apt/sources.list"
