@@ -15,6 +15,7 @@ USER root
 
 # Install dependencies
 RUN apt-get update && apt-get install -y meson cppcheck libcap-dev clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot libattr1-dev uthash-dev gzip rsync autopoint uthash-dev shellcheck
+
 # Install shfmt (Hack!)
 RUN wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && chmod +x /usr/bin/shfmt
 
