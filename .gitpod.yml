@@ -1,6 +1,14 @@
 image:
   file: .gitpod.Dockerfile
 
+github:
+  prebuilds:
+    # enable for the master/default branch (defaults to true)
+    master: true
+
+tasks:
+  - init: make check
+
 vscode:
   extensions:
     - timonwong.shellcheck@0.8.1:16BMw7Jrwd/KkAhJrkHwqQ==
