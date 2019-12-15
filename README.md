@@ -35,31 +35,29 @@ Flow chart https://www.yworks.com/yed-live/?file=https://raw.githubusercontent.c
 
 Quick install:
 ```sh
-# apt-based
-sudo apt-get install -y meson gcc git ninja-build bison libtool libcap-dev autoconf pkg-config fakeroot gzip rsync uthash-dev libattr1-dev autopoint shellcheck && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
+# Exherbo 
+cave resolve -x1 repository/{alip,compnerd,virtualization,danyspin97,python,perl,hasufell}
+cave resolve sys-devel/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
+
 # Ubuntu
 sudo apt-get -y install meson cppcheck libcap-dev clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot libattr1-dev uthash-dev gzip rsync autopoint uthash-dev shellcheck && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
 # Ubuntu <19 (FIXME: Missing libfuse3-dev)
 sudo apt-get -y install meson cppcheck libcap-dev clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot libattr1-dev uthash-dev gzip rsync autopoint uthash-dev shellcheck && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
 # Debian
 sudo apt-get install meson cppcheck clang libfuse3-dev gcc  libcap-devgit ninja-build bison libtool autoconf pkg-config libcap-dev indent libattr1-dev  fakeroot uthash-dev gzip rsync autopoint shellcheck -y && sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt && sudo chmod +x /usr/bin/shfmt
-# FreeBSD - GCC (FIXME)
-pkg install -y meson cppcheck fusefs-libs3 gcc git ninja bison libtool autoconf pkg-config indent fakeroot gzip rsync autopoint shellcheck
-# FreeBSD - Clang (FIXME)
-pkg install -y meson cppcheck clang fusefs-libs3 git ninja bison libtool autoconf pkg-config indent fakeroot gzip rsync autopoint shellcheck
-# Portage-based - Clang
+
+# FreeBSD - GCC
+pkg install -y meson cppcheck fusefs-libs3 gcc clang git ninja bison libtool autoconf pkg-config indent fakeroot gzip rsync autopoint shellcheck
+
+# Gentoo
 emerge -avuDNj dev-util/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-vcs/git dev-util/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-ruby/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck
+
 # pacman-based
 FIXME
-# paludis-based - Clang
-cave resolve sys-devel/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
-# paludis-based - GCC
-cave resolve sys-devel/meson dev-util/cppcheck sys-devel/gcc sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
-# Exherbo 
-cave resolve -x1 repository/{alip,compnerd,virtualization,danyspin97,python,perl}
-cave resolve sys-devel/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
+
 # MacOSX (FIXME)
 brew install shellcheck cppcheck shfmt
+
 # Cygwin (FIXME)
 FIXME
 ```
