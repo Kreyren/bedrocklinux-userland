@@ -1,4 +1,6 @@
-FROM paludis/exherbo-gcc:next
+FROM exherbo/exherbo_ci:latest
+
+USER root
 
 RUN cave sync
 
