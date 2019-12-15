@@ -860,7 +860,8 @@ check_ubuntu:
 	QA/common/qemu_ubuntu.sh
 
 check_debian:
-	vmdb2 QA/test.vmdb --output test.img --verbose --rootfs-tarball=test2
+	#vmdb2 QA/test.vmdb --output test.img --verbose --rootfs-tarball=test2
+	QA/common/qemu_debian.sh
 
 check:
 	QA/tests/check.sh
