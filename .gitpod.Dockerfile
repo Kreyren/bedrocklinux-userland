@@ -11,7 +11,6 @@ RUN rm -r /etc/paludis && git clone https://github.com/Kreyrock/paludis-config.g
 RUN cave sync
 
 # Add required repositories
-RUN cave resolve -x1 repository/compnerd
 RUN cave resolve -x1 repository/virtualization
 RUN cave resolve -x1 repository/danyspin97
 RUN cave resolve -x1 repository/python
