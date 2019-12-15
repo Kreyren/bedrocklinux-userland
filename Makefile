@@ -859,6 +859,9 @@ format:
 check_ubuntu:
 	QA/common/qemu_ubuntu.sh
 
+check_debian:
+	vmdb2 QA/test.vmdb --output test.img --verbose --rootfs-tarball=test2
+
 check:
 	QA/tests/check.sh
 	

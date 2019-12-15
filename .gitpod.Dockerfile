@@ -17,6 +17,12 @@ RUN apt install -y cppcheck indent shellcheck
 # Install QEMU and it's deps 
 RUN apt install -y --install-recommends qemu-kvm qemu virt-manager
 
+# Install vmdb2 to get debian image
+RUN apt install -y vmdb2
+
+# Generate debian image
+RUN vmdb2 QA/test.vmdb --output test.img --verbose --rootfs-tarball=test2
+
 # Install shfmt using brew since it's not yet exported for apt
 RUN brew install shfmt
 
