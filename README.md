@@ -55,6 +55,9 @@ FIXME
 cave resolve sys-devel/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
 # paludis-based - GCC
 cave resolve sys-devel/meson dev-util/cppcheck sys-devel/gcc sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
+# Exherbo 
+cave resolve -x1 repository/{alip,compnerd,virtualization,danyspin97,python,perl}
+cave resolve sys-devel/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x
 # MacOSX (FIXME)
 brew install shellcheck cppcheck shfmt
 # Cygwin (FIXME)
