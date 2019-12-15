@@ -9,9 +9,35 @@ sudo: required
 # Use matrix to run tests on different environments
 matrix:
   include:
+  
+  # Exherbo Linux
+    # Exherbo with GCC
+    - name: "Exherbo Linux with GCC"
+      os: linux
+      cache:
+        directories:
+          - /var/db/paludis
+      env:
+        DOCKER="exherbo_ci:latest"
+        VARIANT="exherbo"
+        TOOL="compile"
+        COMPILER_C="gcc"
+        COMPILER_CXX="g++"
+    # Exherbo with Clang
+    - name: "Exherbo Linux with Clang"
+      os: linux
+      cache:
+        directories:
+          - /var/db/paludis
+      env:
+        DOCKER="exherbo_ci:latest"
+        VARIANT="exherbo"
+        TOOL="compile"
+        COMPILER_C="clang"
+        COMPILER_CXX="clang++"
 
   # Ubuntu Linux
-    # Ubuntu 19.10 (Eoan Ermine)
+    # Ubuntu 19.10 (Eoan Ermine) with GCC
     - name: "Ubuntu 19.10 (Eoan Ermine) with GCC"
       os: linux
       cache:
@@ -25,6 +51,7 @@ matrix:
         TOOL="compile"
         COMPILER_C="gcc"
         COMPILER_CXX="g++"
+    # Ubuntu 19.10 (Eoan Ermine) with Clang
     - name: "Ubuntu 19.10 (Eoan Ermine) with Clang"
       os: linux
       cache:

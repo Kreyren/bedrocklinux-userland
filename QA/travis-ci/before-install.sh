@@ -33,6 +33,18 @@ elif [ "$TRAVIS_OS_NAME" = linux ] && [ -n "$DOCKER" ] && [ -z "$QEMU" ]; then
 	"$DOCKER" tail -f /dev/null
 	sudo docker ps
 
+# Exherbo via Docker
+elif [ "$TRAVIS_OS_NAME" = 'Exherbo Linux' ] && [ -n "$DOCKER" ] && [ -z "$QEMU" ]; then
+	# The build machine therefore needs a sufficient amount of RAM!
+	[ -e "$CONTAINER" ] && sudo docker rm -f "$CONTAINER"
+
+    # Run docker
+	sudo docker run -d \
+		--name "$CONTAINER" \
+		--cap-add=SYS_ADMIN --cap-add=NET_ADMIN \
+		--security-opt apparmor:unconfined \
+		-v "$(pwd):/travis" -w /travis \
+
 # FreeBSD via QEMU
 # QA: Convert on POSIX-compatible
 elif [ "$TRAVIS_OS_NAME" = linux ] && [ "$QEMU" = FreeBSD ]; then

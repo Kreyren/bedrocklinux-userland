@@ -19,38 +19,57 @@ RETRY_MAXTRIALS=5
 RETRY_PAUSE=60
 
 # Linux as-is
-if [ "$TRAVIS_OS_NAME" = linux ] && [ -z "$DOCKER" ] && [ -z "$QEMU" ]; then
-
-	removeme="$(pwd)"
+if [ "$TRAVIS_OS_NAME" = linux ] && [ -z "$DOCKER" ] && [ -z "$QEMU" ] && [ "$VARIANT" = ubuntu ]; then
 
 	sudo apt update
 
-	if [ "$(apt-cache search libfuse3-dev | grep -o "libfuse3-dev - Filesystem in Userspace (development) (3.x version)")" = "libfuse3-dev - Filesystem in Userspace (development) (3.x version)" ]; then
+	if [ "$(apt-cache search libfuse3-dev | grep -o "libfuse3-dev")" = "libfuse3-dev" ]; then
+
 		# Fetch all dependencies
 		sudo apt-get install meson uthash-dev libcap-dev cppcheck libattr1-dev clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot uthash-dev gzip rsync autopoint uthash-dev shellcheck -y
-	elif [ "$(apt-cache search libfuse3-dev | grep -o "libfuse3-dev - Filesystem in Userspace (development) (3.x version)")" != "libfuse3-dev - Filesystem in Userspace (development) (3.x version)" ]; then
-		sudo apt-get install meson uthash-dev libcap-dev cppcheck clang gcc git libattr1-dev ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot uthash-dev gzip rsync autopoint shellcheck -y
+
+	elif [ "$(apt-cache search libfuse3-dev | grep -o "libfuse3-dev")" = "libfuse3-dev" ]; then
+
+        sudo apt-get install meson uthash-dev libcap-dev cppcheck clang gcc git libattr1-dev ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot uthash-dev gzip rsync autopoint shellcheck -y
 
 		# Travis is incompetent to provide usefull version of linux (https://travis-ci.community/t/more-virtual-environments/6213/7) so we have to fetch libfuse3-dev manually
+        warn "Travis-CI's ubuntu still doesn NOT offer 'libfuse3-dev', using hack to fetch it manually"
 		mkdir "$HOME/build/fuse3"
 		fixme "Export latest fuse3 instead of hard-coded in ci/before-install.sh"
 		wget https://github.com/libfuse/libfuse/releases/download/fuse-3.6.2/fuse-3.6.2.tar.xz -O "$HOME/build/fuse3/fuse-3.6.2.tar.xz"
 		tar xpf "$HOME/build/fuse3/fuse-3.6.2.tar.xz" --directory="$HOME/build/fuse3/"
 		mkdir "$HOME/build/fuse3/fuse-3.6.2/build"
 		fixme "Avoid using cd in ci/before-install.sh"
-		cd "$HOME/build/fuse3/fuse-3.6.2/build"
+		cd "$HOME/build/fuse3/fuse-3.6.2/build"|| die 
 		meson .. --prefix /usr
 		ninja
 		sudo ninja install
+
 	else
 		die "Unexpected in install.sh configuring linux as-is"
+
 	fi
 
 	# Fetch shfmt (HACK!)
-	sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt
-	sudo chmod +x /usr/bin/shfmt
+    if [ "$(apt-cache search shfmt | grep -o "shfmt")" = "shfmt" ]; then
+        info "Installing shfmt"
+        apt install -y shfmt
 
-	cd "$removeme"
+    elif [ "$(apt-cache search shfmt | grep -o "shfmt")" != "shfmt" ]; then
+        warn "Package shfmt is not available, using hack to fetch it manually.."
+
+        # Get shfmt
+        if [ -e /usr/bin/shfmt ]; then
+            warn "File /usr/bin/shfmt already exists! This is unexpected assuming that shfmt is already provided on linux as-is?"
+        elif [ ! -e /usr/bin/shfmt ]; then
+	        sudo wget https://github.com/mvdan/sh/releases/download/v3.0.0-beta1/shfmt_v3.0.0-beta1_linux_amd64 -O /usr/bin/shfmt
+            [ ! -x /usr/bin/shfmt ] && sudo chmod +x /usr/bin/shfmt
+        else
+            die "Unexpected happend in /usr/bin/shfmt"
+        fi
+    else
+        die "Unexpected happend in feteching shfmt in linux as-is"
+    fi
 
 # Linux via Docker
 elif [ "$TRAVIS_OS_NAME" = linux ] && [ -n "$DOCKER" ] && [ -z "$QEMU" ]; then
@@ -80,7 +99,40 @@ elif [ "$TRAVIS_OS_NAME" = linux ] && [ -n "$DOCKER" ] && [ -z "$QEMU" ]; then
 
 		info "Fetching repository for $VARIANT"
 		sudo docker exec "$CONTAINER" git clone https://github.com/Kreyrock/Kreyrock.git
-	fi
+
+    # Exherbo        
+	elif [ "$VARIANT" = exherbo ]; then
+        # Get paludis-config
+        sudo docker exec "$CONTAINER" [ -e /etc/paludis ] && rm -r /etc/paludis
+        sudo docker exec "$CONTAINER" git clone https://github.com/Kreyrock/paludis-config.git /etc/paludis
+
+        # Sync repositories
+        sudo docker exec "$CONTAINER" cave resolve
+
+        # Resolve required repositories
+        sudo docker exec "$CONTAINER" cave resolve -x1 repository/{alip,compnerd,virtualization,danyspin97,python,perl,hasufell} || die "Unable to resolve repositories for $TRAVIS_OS_NAME"
+
+        # Resolve required dependencies
+        if [ "$COMPILER_C" = gcc ]; then
+            info "Using GCC variant for $TRAVIS_OS_NAME"
+            sudo docker exec "$CONTAINER" cave resolve sys-devel/meson dev-util/cppcheck sys-devel/gcc sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x || die "Unable to resolve all dependencies for $TRAVIS_OS_NAME"
+
+        elif [ "$COMPILER_C" = clang ]; then
+            info "Using Clang variant for $TRAVIS_OS_NAME"
+            sudo docker exec "$CONTAINER" cave resolve sys-devel/meson dev-util/cppcheck sys-devel/clang sys-fs/fuse dev-scm/git sys-devel/ninja sys-devel/bison sys-devel/libtool sys-devel/autoconf dev-util/pkg-config dev-util/indent sys-apps/fakeroot app-arch/gzip net-misc/rsync sys-devel/autoconf dev-util/shellcheck -x || die "Unable to resolve all dependencies for $TRAVIS_OS_NAME"
+
+        else
+            die "Unexpected COMPILER_C has been parsed in exherbo variant - '$COMPILER_C'"
+
+        fi
+
+        # Remove build instructions to save space
+        sudo docker exec "$CONTAINER" [ -e /var/db/paludis ] && rm -r var/db/paludis
+
+    else
+        die "Unexpected variant has been parsed in install.sh - '$VARIANT'"
+
+    fi
 
 # MacOS X
 elif [ "$TRAVIS_OS_NAME" = osx ]; then

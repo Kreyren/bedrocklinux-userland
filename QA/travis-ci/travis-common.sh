@@ -12,3 +12,6 @@ fixme() {
 info() {
 	printf 'INFO: %s\n' "$*"
 }
+warn() {
+    printf 'WARN: %s\n' "$*"
+}
