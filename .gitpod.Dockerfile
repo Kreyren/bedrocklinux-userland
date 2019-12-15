@@ -2,9 +2,8 @@ FROM exherbo/exherbo_ci:latest
 
 USER root
 
-RUN ls -la /dev/tty ; sleep 15
-
-RUN exit 1
+# Fix /dev/tty ownership
+RUN chown root:tty /dev/tty
 
 # Sync repos
 RUN cave sync
