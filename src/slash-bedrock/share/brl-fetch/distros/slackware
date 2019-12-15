@@ -96,9 +96,12 @@ fetch() {
 	done | progress_bar "${total}"
 
 	step "Running bootstrap software"
-	setup_chroot "${bootstrap_dir}"
+    	setup_chroot "${bootstrap_dir}"
 	share_cache "packages" "${bootstrap_dir}/packages"
 	for pkg in "${cache}/packages/"*; do
+        printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed!"
+        
+        # shellcheck disable=SC2001 # HOTFIX! 
 		pkg="$(echo "${pkg}" | sed 's,^.*/,,')"
 		LC_ALL=C chroot "${bootstrap_dir}" /sbin/installpkg --root "/target-root" "/packages/${pkg}" >/dev/null 2>&1
 		echo "x"

@@ -190,10 +190,10 @@ matrix:
         TOOL="compile"
 
 before_install:
-  - ci/travis-ci/before-install.sh
+  - QA/travis-ci/before-install.sh
 
 install:
-  - ci/travis-ci/install.sh
+  - QA/travis-ci/install.sh
 
 script:
-  - ci/travis-ci/test.sh
+  - QA/travis-ci/test.sh

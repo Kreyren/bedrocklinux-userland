@@ -2,10 +2,10 @@
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 
-# shellcheck source=ci/travis-ci/travis-common.sh
+# shellcheck source=QA/travis-ci/travis-common.sh
 . "$(dirname "$0")/travis-common.sh"
 
-# shellcheck source=ci/travis-ci/get-container.sh
+# shellcheck source=QA/travis-ci/get-container.sh
 . "$(dirname "$0")/get-container.sh"
 
 # Linux as-is

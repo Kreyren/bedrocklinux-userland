@@ -7,7 +7,7 @@
 # Bash options:
 set -e
 
-# shellcheck source=ci/travis-ci/travis-common.sh
+# shellcheck source=QA/travis-ci/travis-common.sh
 . "$(dirname "$0")/travis-common.sh"
 
 if [ -n "$DOCKER" ]; then

@@ -508,6 +508,8 @@ checksum_downloads() {
 "
 	for line in ${lines}; do
 		url="$(echo "${line}" | cut -d"	" -f1)"
+        printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed"
+        # shellcheck disable=SC2001 # HOTFIX!
 		file="${dir}/$(echo "${url}" | sed "s,^.*/,,")"
 		checksum_cmd="$(echo "${line}" | cut -d"	" -f2)"
 		checksum="$(echo "${line}" | cut -d"	" -f3)"
@@ -1183,12 +1185,16 @@ for distro in ${distros}; do
 		# arch mirrors are typically formatted including $variables.
 		# Strip those - we'll populate them and append ourselves.
 		if echo "${target_mirror}" | grep -q "[$]"; then
+            printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed"
+            # shellcheck disable=SC2001 # HOTFIX!
 			target_mirror="$(echo "${target_mirror}" | sed 's/[$].*//g')"
 		fi
 		# Some users call brl-fetch without escaping/quoting the
 		# aforementioned variables.  Since they are not populated shell
 		# variables, they end up being empty strings.  Detect this and
 		# handle it as well.
+        printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed"
+        # shellcheck disable=SC2001 # HOTFIX!
 		if echo "${target_mirror}" | grep -q '//os//\?$'; then
 			target_mirror="$(echo "${target_mirror}" | sed 's,//os//\?$,,g')"
 		fi

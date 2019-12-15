@@ -6,7 +6,7 @@
 
 set -e
 
-. ci/travis-ci/travis-common.sh
+. QA/travis-ci/travis-common.sh
 
 maxTrials=3
 pause=10

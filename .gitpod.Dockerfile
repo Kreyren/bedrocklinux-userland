@@ -10,3 +10,6 @@ RUN apt-get install -y meson cppcheck libcap-dev clang libfuse3-dev gcc git ninj
 
 # Install shfmt using brew since it's not yet exported for apt
 RUN brew install shfmt
+
+# Install Markdownlint (https://github.com/DavidAnson/markdownlint)
+RUN npm install markdownlint --save-dev

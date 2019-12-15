@@ -857,65 +857,8 @@ format:
 	@ printf "\e[39m\n"
 
 check:
-	# Run various static checkers against the codebase.
-	#
-	# Generally, one should strive to get these all to pass submit
-	# something to Bedrock Linux.  However, the code base is not expected
-	# to pass all of these at all times, as as different versions of the
-	# static checkers may cover different things.  Don't fret if this
-	# returns some warnings.
-	#
-	# Unlike the rest of the build system, this links dynamically against
-	# the system libraries rather than statically against custom-built
-	# ones.  This removes the need to do things like teach static analysis
-	# tools about musl-gcc.  It comes at the cost of non-portable resulting
-	# binaries, but we don't care about the resulting binaries themselves,
-	# just the code being analyzed.
-	#
-	# Libraries you'll need to install:
-	#
-	# - uthash
-	# - libfuse3
-	# - libcap
-	# - libattr
-	#
-	# Static analysis tools which need to be installed:
-	#
-	# - shellcheck
-	# - cppcheck
-	# - clang
-	# - gcc
-	# - scan-build (usually distributed with clang)
-	# - shfmt (https://github.com/mvdan/sh)
-	# - indent (GNU)
-	#
-	# check against shellcheck
-
-	# Keep the spaces in the printf string for better formatting of output:
-	## checking shell file path
-	## checking zsh   file path
-	## checking bash  file path
-	##                ^ Notice file aligned
-	for file in $$(find . -not \( -path './.git' -prune -o -path './vendor' -prune \) -type f); do \
-		case $$(head -n1 "$$file") in \
-			'#!/'*'/bash'|'#!/'*' bash') \
-				printf '%s\n' "checking bash  file $${file#./}" ;\
-				shellcheck -x -s bash "$$file" || exit 1 ;\
-			;; \
-			'#!/'*'/sh'|'#!/'*' sh') \
-				printf '%s\n' "checking shell file $${file#./}" ;\
-				shellcheck -x -s sh "$$file" || exit 1 ;\
-			;; \
-			'#compdef'*) \
-				printf '%s\n' "checking zsh   file $${file#./}" ;\
-				shellcheck -x -s bash "$$file" || exit 1 ;\
-		esac ;\
-	done
-
-	# check against cppcheck
-	for file in $$(find src/ -type f -name "*.[ch]"); do \
-		cppcheck --error-exitcode=1 "$$file" || exit 1; \
-	done
+	QA/tests/check.sh
+	
 	# check against various compiler warnings
 	for compiler in clang gcc; do \
 		for dir in src/*/Makefile; do \
@@ -924,6 +867,7 @@ check:
 			$(MAKE) -C "$${dir%Makefile}" clean || exit 1; \
 		done \
 	done
+
 	# Disable formatting for now
 	# # check C code formatting
 	# for file in $$(find src/ -type f -name "*.[ch]"); do \
@@ -936,10 +880,7 @@ check:
 	"=== All static analysis checks pass ===" \
 	"======================================="
 
-#
 # Release build environment setup
-#
-
 release-build-environment:
 	# This build system handles non-native CPU ISAs builds by leveraging
 	# qemu to run build scripts and makefiles that may not be cross-compile
