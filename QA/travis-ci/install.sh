@@ -136,13 +136,9 @@ elif [ "$TRAVIS_OS_NAME" = linux ] && [ -n "$DOCKER" ] && [ -z "$QEMU" ]; then
 
 # MacOS X
 elif [ "$TRAVIS_OS_NAME" = osx ]; then
-	(
-		# Homebrew takes lots of time on runtime due to the cleanup used, this is a hotfix (https://travis-ci.community/t/macosx-brew-update-takes-too-much-time/6295)
-		# shellcheck disable=SC2034
-		HOMEBREW_NO_INSTALL_CLEANUP=1
-
-		brew update || die "Unable to update brew"
-	)
+	# Homebrew takes lots of time on runtime due to the cleanup used, this is a hotfix (https://travis-ci.community/t/macosx-brew-update-takes-too-much-time/6295)
+	HOMEBREW_NO_INSTALL_CLEANUP=1 brew update || die "Unable to update brew"
+    
 	info "Installing dependencies"
 	brew install shellcheck cppcheck shfmt || die "Unable to install dependencies on $TRAVIS_OS_NAME"
 
