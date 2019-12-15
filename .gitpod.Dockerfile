@@ -2,8 +2,8 @@ FROM exherbo/exherbo_ci:latest
 
 USER root
 
-# test
-RUN usermod -a -G nobody paludisbuild
+# Export paludis-config
+RUN rm -r /etc/paludis && git clone https://github.com/Kreyrock/paludis-config.git /etc/paludis
 
 # Sync repos
 RUN cave sync
