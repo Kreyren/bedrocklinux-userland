@@ -1,15 +1,30 @@
-FROM gitpod/workspace-full:latest
+FROM gitpod/workspace-full-vnc:latest
 
 USER root
 
 # Update apt repositories
 RUN apt-get update
 
-# Install dependencies
-RUN apt-get install -y meson cppcheck libcap-dev clang libfuse3-dev gcc git ninja-build bison libtool autoconf pkg-config libcap-dev indent fakeroot libattr1-dev uthash-dev gzip rsync autopoint uthash-dev shellcheck 
+# Upgrade the image
+RUN apt -y upgrade && apt -y dist-upgrade
+
+# Install build dependencies
+RUN apt install -y meson clang gcc git ninja-build bison autoconf fakeroot libcap-dev libfuse3-dev libtool pkg-config libcap-dev libattr1-dev uthash-dev gzip rsync autopoint uthash-dev
+
+# Install test dependencies
+RUN apt install -y cppcheck indent shellcheck 
+
+# Install QEMU and it's deps 
+RUN apt install -y --install-recommends qemu-kvm qemu virt-manager
 
 # Install shfmt using brew since it's not yet exported for apt
 RUN brew install shfmt
 
 # Install Markdownlint (https://github.com/DavidAnson/markdownlint)
 RUN npm install markdownlint --save-dev
+
+# Remove apt sources to clean up space
+RUN rm -rf /var/lib/apt/lists/*
+
+# Clean-up unneeded packages
+RUN apt autoremove -y

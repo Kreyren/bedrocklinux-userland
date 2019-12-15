@@ -856,6 +856,9 @@ format:
 	@ echo "======================================"
 	@ printf "\e[39m\n"
 
+check_ubuntu:
+	QA/common/qemu_ubuntu.sh
+
 check:
 	QA/tests/check.sh
 	
