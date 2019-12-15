@@ -1,5 +1,5 @@
-FROM paludis/exherbo-gcc:latest
+FROM paludis/exherbo-gcc:next
 
 RUN cave sync
 
-RUN cave resolve shellcheck -x
+RUN cave resolve xlogo -x
