@@ -2,6 +2,8 @@ FROM exherbo/exherbo_ci:latest
 
 USER root
 
+RUN usermod -a -G 65534 paludisbuild
+
 # Export paludis-config
 RUN rm -r /etc/paludis && git clone https://github.com/Kreyrock/paludis-config.git /etc/paludis
 
