@@ -2,8 +2,8 @@ FROM exherbo/exherbo_ci:latest
 
 USER root
 
-# Fix /dev/tty ownership
-RUN chown root:tty /dev/tty
+# test
+RUN usermod -a -G nobody paludisbuild
 
 # Sync repos
 RUN cave sync
