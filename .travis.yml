@@ -216,11 +216,5 @@ matrix:
       env:
         TOOL="compile"
 
-before_install:
-  - QA/travis-ci/before-install.sh
-
-install:
-  - QA/travis-ci/install.sh
-
 script:
-  - QA/travis-ci/test.sh
+  - QA/tests/HELL/hell.sh
