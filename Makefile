@@ -151,24 +151,6 @@ MUSLCC=$(SUPPORT)/bin/musl-gcc
 INDENT_FLAGS=-cdb -br
 WERROR_FLAGS=-Werror -Wall -Wextra -std=c99 -pedantic
 
-define my_important_task =
-	#!/bin/sh
-	for file in $$(find src/ -type f); do
-		case "$(head -n1 $$file)" in
-			'*sh')
-				shellcheck -x -s sh "$$file" || exit 1
-			;;
-			'*bash')
-				echo "checking bash file $$file"
-				shellcheck -x -s bash "$$file" || exit 1
-			;;
-			'#compdef*')
-				echo "checking zsh file $$file"
-				shellcheck -x -s sh "$$file" || exit 1
-		esac
-	done
-endef
-
 all: $(INSTALLER)
 
 remove_vendor_source:
