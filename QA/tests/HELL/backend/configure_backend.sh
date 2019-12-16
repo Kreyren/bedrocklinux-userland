@@ -1,82 +1,27 @@
 #!/bin/sh
-# shellcheck disable=SC1117
 # Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
 # Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
 # Based in part upon 'before-install' from rsplib	(https://raw.githubusercontent.com/dreibh/rsplib/master/ci/before-install), which is:
 # 		Copyright (C) 2018-2019 by Thomas Dreibholz <dreibh@iem.uni-due.de> as GPLv3 or any other GPL at your option
 
 : '
+    This file is used to configure backend depending on expected workflow. This is for example installing dependencies for tests.
+
     This file expects following variables:
-    - KERNEL = Used kernel
-    - VARIANT = Name of used distribution (lower-case)
-    - IDENTIFIER = name of codename or version
+    - KERNEL = Used kernel (linux)
+    - VARIANT = Name of used distribution (debian)
+    - IDENTIFIER = name of codename or version ("bullseye" or "11")
 
     In case DOCKER images are used:
-    - DOCKER = Name of used docker container
+    - DOCKER = Name of used docker container (exherbo/exherbo_ci:latest)
 
     In case QEMU is used:
     - QEMU = Name of (FIXME, not implemented)
 
     TODO
     - Implement building of DOCKER images
+    - Implement QEMU
 '
-
-# SYNOPSIS: die [num] (message)
-die() {
-    err_code="$1"
-    message="$2"
-
-    case "$err_code" in
-        0) true ;;
-        1)
-            if [ -z "$message" ]; then
-                case $LANG in
-                    en*) printf 'FATAL: %s\n' "Script returned true" ;;
-                    # Do not transtale, default message
-                    *) printf 'FATAL: %s\n' "Script returned true"
-                esac
-            elif [ -n "$message" ]; then
-                case $LANG in
-                    en*) printf 'FATAL: %s\n' "$mesage" ;;
-                    # Do not transtale, default message
-                    *) printf 'FATAL: %s\n' "$message"
-                esac
-            else
-                printf 'FATAL: %s\n' "Unexpected happend in die 1"
-                exit 255
-            fi
-            exit $err_code
-        ;;
-        3)
-            # FIXME: Implement translate
-            # FIXME: Implement message handling
-            printf 'FATAL: %s\n' "This script is expected to be invoked as root"
-        ;;
-        255)
-            # FIXME: Implement translate
-            # FIXME: Implement output for blank $message
-
-            printf 'FATAL: %s\n' "Unexpected happend in $message"
-            exit $err_code
-        ;;
-        fixme)
-            # FIXME: Translate
-            # FIXME: Handle scenarios where message is not parsed
-            printf 'FIXME: $s\n' "$message"
-        ;;
-        *) printf 'FATAL: %s\n' "Unexpected argument '$err_code' has been parsed in 'die()'" ; exit 255
-    esac
-
-    unset err_code message
-}
-
-warn() { printf 'WARN: %s\n' "$1" ;}
-info() { printf 'INFO: %s\n' "$1" ;}
-fixme() {
-    case $1 in
-        *) printf 'FIXME: %s\n' "$2"
-    esac
-}
 
 # Configure backend
 if [ "$KERNEL" = linux ]; then
@@ -243,32 +188,4 @@ elif [ "$KERNEL" = freebsd ]; then
     fixme "$KERNEL is not implemented"
 else
     die "Unsupported KERNEL used - $KERNEL"
-fi
-
-# Run tests
-if [ "$TEST" = core ]; then
-    info "Performing core tests.."
-    make check || die 1 "Tests failed"
-elif [ "$TEST" = extensive ]; then
-    info "Performing extensive tests"
-    fixme "Implement extensive tests"
-    make fullcheck || die 1 "Tests failed"
-elif [ "$TEST" = skip ]; then
-    info "Variable 'TEST' stores value 'skip', skipping tests"
-elif [ "$TEST" = '' ]; then
-    warn "Variable 'TEST' is not set, skipping tests"
-else
-    die 255 "Performing tests"
-fi
-
-# Build
-if [ "$BUILD" = all ]; then
-    info "Performing build on kernel '$KERNEL' using $VARIANT-$IDENTIFIER"
-    make SKIPSIGN=true || die 1 "Build failed"
-elif [ "$BUILD" = skip ]; then
-    info "Variable 'BUILD' stores valie 'skip', skipping build"
-elif [ "$BUILD" = '' ]; then
-    warn "Variable 'BUILD' is not set, skipping build"
-else
-    die 255 "Building on $KERNEL"
 fi

@@ -8,7 +8,7 @@ If you find something that is not true, then your are encouraged to make an issu
 
 # non-POSIX/POSIX shell/bash
 ### General
-- **Everything has to pass shellcheck otherwise it is not mergable and will be ignored/closed on review**
+- Everything has to pass shellcheck otherwise it is not mergable and will be ignored/closed on review
 
 - Force POSIX shell unless there is a good reason to use non-POSIX shell/bash
 	- If we can't use POSIX shell -> provide a reasoning in the code
@@ -18,12 +18,26 @@ If you find something that is not true, then your are encouraged to make an issu
 # Unwanted
 rm something
 # Wanted
-[ -e something ] && rm something
-#      ^ Trigger
-#                       ^ Action
+  [ -e something ] && rm something
+# ^^^^^^^^^^^^^^^^^^^ - Trigger
+#                     ^^^^^^^^^^^^ - Action
 ```
 
 Reasoning being sanitization to avoid unexpected action
+
+- Output helpful messages
+
+```sh
+# Unwanted
+mv something nothing || exit 1
+
+# Wanted
+mv something nothing || die 1 "Unable to move 'something' to 'nothing' which is required for reasons"
+```
+
+This is done so that maintainers can avoid talking to the end-user at all cost when they report an issue which usually wastes lots of time and is **more likely** to cause a confusion.
+
+If you contribute a code you should expect an output **only** to know what is the issue in case your code causes a regression.
 
 - 'echo' is banned
 Command echo is not allowed in this repository, use `printf '%s\n' "msg"` instead
@@ -31,8 +45,6 @@ Command echo is not allowed in this repository, use `printf '%s\n' "msg"` instea
 Reasoning being
 - reliability on POSIX and non-standard systems (https://unix.stackexchange.com/a/65819)
 - slight runtime advantage in favor of printf (https://unix.stackexchange.com/a/77564)
-
-
 
 ### Variables
 - Avoid unnecesary curly brackets
