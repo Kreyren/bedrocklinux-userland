@@ -1,17 +1,9 @@
 image:
   file: .gitpod.Dockerfile
 
-github:
-  prebuilds:
-    # enable for the master/default branch (defaults to true)
-    master: true
-
 ports:
 - port: 6080
   onOpen: open-preview
-
-tasks:
-  - init: make check
 
 vscode:
   extensions:
