@@ -1,0 +1,51 @@
+steps:
+  - mkimg: "{{ output }}"
+    size: 4G
+
+  - mklabel: msdos
+    device: "{{ output }}"
+
+  - mkpart: primary
+    device: "{{ output }}"
+    start: 1M
+    end: 10M
+    tag: unused
+
+  - mkpart: primary
+    device: "{{ output }}"
+    start: 10M
+    end: 100%
+    tag: rootfs
+
+  - kpartx: "{{ output }}"
+
+  - mkfs: ext4
+    partition: rootfs
+    label: smoke
+
+  - mount: rootfs
+
+  - unpack-rootfs: rootfs
+
+  - debootstrap: testing
+    mirror: http://deb.debian.org/debian
+    target: rootfs
+    unless: rootfs_unpacked
+
+  - apt: install
+    packages:
+      - linux-image-amd64
+    tag: rootfs
+    unless: rootfs_unpacked
+
+  - cache-rootfs: rootfs
+    unless: rootfs_unpacked
+
+  - chroot: rootfs
+    shell: |
+      sed -i '/^root:[^:]*:/s//root::/' /etc/passwd
+      echo pc-vmdb2 > /etc/hostname
+
+  - grub: bios
+    tag: rootfs
+    console: serial
