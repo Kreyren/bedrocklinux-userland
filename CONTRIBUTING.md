@@ -10,6 +10,8 @@ If you find something that is not true, then your are encouraged to make an issu
 ### FIXMEs
 Fixing 'FIXME' in the code is always welcomed.
 
+Shell/bash files has lots of strings alike `# shellcheck disable=SC2012 # HOTFIX!` these has to be resovled and are hotfixed
+
 ### Educate the community
 If you are confident in your abilities and if you are open-minded about informations that you are providing (to make sure that the informations that you are providing are accurate) then you are encouraged to educate the community.
 

@@ -8,6 +8,8 @@
 # Copyright (c) 2018 Daniel Thau <danthau@bedrocklinux.org>
 #
 
+# shellcheck shell=bash # compdef is not recognized by shellcheck
+
 _brl_subcommands() {
 	local -a args
 	args=(
@@ -206,6 +208,7 @@ case "${words[2]}" in
 	_arguments "*:report output location:_path_files -f"
 	;;
 "tutorial")
+	# shellcheck disable=SC2012 # HOTFIX!
 	args+=("*:lesson:($(ls -1 /bedrock/share/brl-tutorial/lessons/ | sed 's/^[0-9]*_//'))")
 esac
 

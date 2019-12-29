@@ -68,7 +68,7 @@ elif [ "$TRAVIS_OS_NAME" = linux ] && [ "$QEMU" = FreeBSD ]; then
 		fi
 
 		# Modify FreeBSD image
-		pushd /vservers/qemu-freebsd/
+		pushd /vservers/qemu-freebsd/ || die "Unable to pushd in '/vservers/qemu-freebsd/'"
 
 		# Grow image
 		truncate -s 128G "$imageName"
@@ -133,7 +133,7 @@ elif [ "$TRAVIS_OS_NAME" = linux ] && [ "$QEMU" = FreeBSD ]; then
 		sudo umount "$mountPoint"
 		sudo losetup -d "$LOOPDEV"
 
-		popd
+		popd || die "Unable to popd"
 
 		# Host-only networking
 		sudo ip link add br0 type bridge || true

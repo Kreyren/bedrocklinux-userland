@@ -62,7 +62,7 @@ while [ $# -gt 1 ]; do case "${args:-}" in
 	;;
 	"-h" | "--help" | "help" | "")
 		print_help
-		die 0
+		exit 0
 	;;
 	*)
 		printf_help
