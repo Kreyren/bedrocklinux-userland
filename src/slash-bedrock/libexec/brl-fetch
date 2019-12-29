@@ -1,19 +1,16 @@
-#!/bedrock/libexec/busybox sh
-#
-# brl fetch
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2016-2019 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Acquires files from various Linux distributions.
+#!/bin/sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-fetch' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-fetch), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Acquires files from various Linux distributions (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl fetch ${color_sub}[options] [flags] [distros]${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl fetch ${color_sub}[options] [flags] [distros]${color_norm}
 
 Acquire files from other Linux distributions for use as new ${color_term}strata${color_norm}.  List
 operations may be run as non-root, but actual fetch operation requires root.
@@ -99,13 +96,13 @@ find_link() {
 	index="${1}"
 	regex="${2}"
 
-	printf "Looking for file matching: ${color_file}${regex}${color_norm}\\n" >&2
-	printf "at: ${color_link}${index}${color_norm}\\n" >&2
+	printf '%s\n' "Looking for file matching: ${color_file}${regex}${color_norm}\\n" >&2
+	printf '%s\n' "at: ${color_link}${index}${color_norm}\\n" >&2
 	path="$(wget -O- "${index}" 2>/dev/null | list_links | sed 's,^.*/,,' | grep -- "${regex}" | head -n1)"
 	if ! echo "${path}" | grep -q '[^[:space:]]'; then
 		abort "Unable to find file.  Try manually specifying a known good mirror with \`--mirror\`."
 	fi
-	printf "found: ${color_file}${path}${color_norm}\\n" >&2
+	printf '%s\n' "found: ${color_file}${path}${color_norm}" >&2
 
 	if [ "${path}" != "" ]; then
 		echo "${index}/${path}"
@@ -117,7 +114,8 @@ download_files() {
 	shift
 	files="${*}"
 	(
-		cd "${dir}"
+		# FIXME: Unable to capture error since shellcheck fails
+		cd "$dir" || die 1 "Unable to change directory in '$dir' in 'download_files' function"
 		IFS="
 "
 		for file in ${files}; do
@@ -163,7 +161,7 @@ setup_chroot() {
 tear_down_chroot() {
 	dir="${1}"
 
-	cd /
+	cd / || die 1 "Function 'tear_down_chroot' is unable to change directory in '/'"
 	kill_chroot_procs "${dir}"
 	umount_r "${dir}"
 }
@@ -300,7 +298,7 @@ pick_mirror() {
 	*) suffix="${distro}" ;;
 	esac
 
-	notice "Checking bedrock.conf [brl-fetch-mirror] items" >&2
+	einfo "Checking bedrock.conf [brl-fetch-mirror] items" >&2
 	rm -f "${mirror_file}"
 	(
 		echo "X"
@@ -340,7 +338,7 @@ pick_mirror() {
 	# Use netselect to filter the list down to top ten.  This is faster but
 	# less accurate than method used for final ten.
 	if [ "${count}" -gt 10 ]; then
-		notice "Fast filtering ${count} to top 10" >&2
+		einfo "Fast filtering ${count} to top 10" >&2
 		(
 			echo "X"
 			(
@@ -350,9 +348,9 @@ pick_mirror() {
 		) | progress_unknown >&2
 
 		if [ -z "$(cat "${mirror_file}")" ]; then
-			printf "Fast filter failed, falling back to slow method against all ${count} mirrors.\\n" >&2
-			printf "This is known to fail within certain virtualization environments which do not support ICMP.\\n" >&2
-			printf "If this seems unacceptably slow, ${color_cmd}ctrl-c${color_norm} out, ${color_cmd}brl remove${color_norm} the ${color_term}stratum${color_norm}, then look up a good mirror for the distro and ${color_cmd}brl fetch${color_norm} again, this time manually providing mirror with ${color_cmd}-m${color_norm}\\n" >&2
+			printf '%s\n' "Fast filter failed, falling back to slow method against all ${count} mirrors." >&2
+			printf '%s\n' "This is known to fail within certain virtualization environments which do not support ICMP." >&2
+			printf '%s\n' "If this seems unacceptably slow, ${color_cmd}ctrl-c${color_norm} out, ${color_cmd}brl remove${color_norm} the ${color_term}stratum${color_norm}, then look up a good mirror for the distro and ${color_cmd}brl fetch${color_norm} again, this time manually providing mirror with ${color_cmd}-m${color_norm}" >&2
 		else
 			mirrors="$(cat "${mirror_file}")"
 		fi
@@ -365,7 +363,7 @@ pick_mirror() {
 	if [ "${count}" -eq 0 ]; then
 		abort "Unable to automatically find a valid mirror.  Manually specify mirror with \`--mirror\`."
 	fi
-	notice "Finding fastest mirror from ${count}" >&2
+	einfo "Finding fastest mirror from ${count}" >&2
 	for mirror in ${mirrors}; do
 		echo "mirror ${mirror}"
 		time wget -O- "${mirror}/${test_file}" >/dev/null
@@ -483,7 +481,7 @@ checksum_download() {
 	url="${4}"
 
 	if [ -r "${file}" ] && [ "$("${checksum_cmd}" "${file}" | awk '{print$1}')" = "${checksum}" ]; then
-		notice "Using cached ${file}"
+		einfo "Using cached ${file}"
 		touch "${file}"
 		return
 	fi
@@ -510,6 +508,8 @@ checksum_downloads() {
 "
 	for line in ${lines}; do
 		url="$(echo "${line}" | cut -d"	" -f1)"
+        printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed"
+        # shellcheck disable=SC2001 # HOTFIX!
 		file="${dir}/$(echo "${url}" | sed "s,^.*/,,")"
 		checksum_cmd="$(echo "${line}" | cut -d"	" -f2)"
 		checksum="$(echo "${line}" | cut -d"	" -f3)"
@@ -520,7 +520,8 @@ checksum_downloads() {
 
 extract_debs() {
 	(
-		cd "${1}"
+		# FIXME: Unable to capture error since shellcheck fails
+		cd "$1" || die 1 "Unable to change a directory in '$1' in function 'extract_debs'"
 		shift
 		for file in "${@}"; do
 			ar x "${file}"
@@ -586,7 +587,7 @@ pkg=\$1
 EOF
 
 	(
-		cd "${dir}"
+		cd "$dir" || die 1 "function 'extract_rpms is unable to change directory in '$dir' "
 		for file in "${@}"; do
 			sh "${dir}/rpm_extractor" "${file}" >/dev/nulll 2>&1
 			echo "${file}"
@@ -804,7 +805,7 @@ rpmdb_to_brldb() {
 
 pacmandb_to_brldb() {
 	mkdir -p "${2}/depends/" "${2}/provides" "${2}/paths"
-	cd "${1}"
+	cd "$1" || die 1 "Function 'pacmandb_to_brldb' is unable to change directory in '$1'"
 	total="$(echo "${1}/"*/* | wc -w)"
 	for repo in *; do
 		for pkg in "${repo}/"*; do
@@ -1123,11 +1124,11 @@ for distro in ${distros}; do
 		if stat -c "%A" "${qemu_path}" | grep -q "^........w."; then
 			abort "Interpreter at ${qemu_path} is open to writing by other users.  Ensure a locked down \"${qemu-bin}\" is earlier in the \$PATH and try again."
 		fi
-		notice "${color_warn}Non-native CPU architecture functionality is experimental.  The fetch operation and resulting files may or may not work.${color_norm}"
+		einfo "${color_warn}Non-native CPU architecture functionality is experimental.  The fetch operation and resulting files may or may not work.${color_norm}"
 	fi
 
 	if ! check_supported; then
-		notice "${color_warn}Fetch code for specified distro is experimental.  The fetch operation and resulting files may or may not work.${color_norm}"
+		einfo "${color_warn}Fetch code for specified distro is experimental.  The fetch operation and resulting files may or may not work.${color_norm}"
 	fi
 
 	if [ -n "${flag_name}" ]; then
@@ -1147,7 +1148,7 @@ for distro in ${distros}; do
 	mkdir -p "${target_dir}"
 	drop_lock
 
-	steps="$(grep -c "^[[:space:]]*step\>" "${backend}")"
+	steps="$(grep -c "^[[:space:]]*step\\>" "${backend}")"
 	steps="$((steps + 9))"
 	if ! "${flag_dont_show}"; then
 		steps=$((steps + 1))
@@ -1158,13 +1159,13 @@ for distro in ${distros}; do
 	step_init "${steps}"
 
 	step "Determining name"
-	notice "Using ${color_strat}${target_name}${color_norm}"
+	einfo "Using ${color_strat}${target_name}${color_norm}"
 
 	step "Determining CPU architecture"
 	distro_arch="$(brl_arch_to_distro "${target_arch}")"
 	set_attr "${target_dir}" "arch" "${target_arch}"
 	setup_binfmt_misc "${target_name}"
-	notice "Using ${color_file}${target_arch}${color_norm}"
+	einfo "Using ${color_file}${target_arch}${color_norm}"
 
 	step "Determining release"
 	if [ -n "${flag_release}" ]; then
@@ -1172,7 +1173,7 @@ for distro in ${distros}; do
 	else
 		target_release="$(pick_release)"
 	fi
-	notice "Using ${color_file}${target_release}${color_norm}"
+	einfo "Using ${color_file}${target_release}${color_norm}"
 
 	step "Determining mirror"
 	if [ -n "${flag_mirror}" ]; then
@@ -1184,18 +1185,22 @@ for distro in ${distros}; do
 		# arch mirrors are typically formatted including $variables.
 		# Strip those - we'll populate them and append ourselves.
 		if echo "${target_mirror}" | grep -q "[$]"; then
+            printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed"
+            # shellcheck disable=SC2001 # HOTFIX!
 			target_mirror="$(echo "${target_mirror}" | sed 's/[$].*//g')"
 		fi
 		# Some users call brl-fetch without escaping/quoting the
 		# aforementioned variables.  Since they are not populated shell
 		# variables, they end up being empty strings.  Detect this and
 		# handle it as well.
+        printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed"
+        # shellcheck disable=SC2001 # HOTFIX!
 		if echo "${target_mirror}" | grep -q '//os//\?$'; then
 			target_mirror="$(echo "${target_mirror}" | sed 's,//os//\?$,,g')"
 		fi
 	fi
 
-	notice "Using ${color_link}${target_mirror}${color_norm}"
+	einfo "Using ${color_link}${target_mirror}${color_norm}"
 
 	step "Making bootstrap directory structure"
 	bootstrap_dir="${target_dir}/brl-bootstrap"
@@ -1259,7 +1264,7 @@ for distro in ${distros}; do
 		/bedrock/libexec/brl-enable "${target_name}"
 	fi
 
-	notice "Successfully ${color_term}fetched${color_norm} a new ${distro} ${color_term}stratum${color_norm} with name ${color_strat}${target_name}${color_norm}"
+	einfo "Successfully ${color_term}fetched${color_norm} a new ${distro} ${color_term}stratum${color_norm} with name ${color_strat}${target_name}${color_norm}"
 done
 
-exit_success
+die 0

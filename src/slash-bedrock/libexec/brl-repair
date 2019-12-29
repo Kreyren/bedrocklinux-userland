@@ -1,18 +1,16 @@
-#!/bedrock/libexec/busybox sh
-#
-# brl repair
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2018 Daniel Thau <danthau@bedrocklinux.org>
-# Repairs broken strata
+#!/bin/sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-repair' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-repair), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Repairs broken strata (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl repair ${color_sub}[options] <strata>${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl repair ${color_sub}[options] <strata>${color_norm}
 
 Repairs broken ${color_term}strata${color_norm}.  Requires root.
 
@@ -62,7 +60,7 @@ ensure_mnt() {
 
 	# If a non-global mount exists, unmount it.
 	if [ "${type}" != "missing" ] && ! "${global}"; then
-		if [ "${strategy}" == "new" ]; then
+		if [ "$strategy" = "new" ]; then
 			abort "Cannot repair \"$stratum\" with --new strategy due to problematic mount at \"${mnt}\""
 		fi
 		umount_r --init "${root}${mnt}"
@@ -72,7 +70,7 @@ ensure_mnt() {
 
 	# If a mount exists but it is the incorrect filesystem type, unmount it.
 	if [ "${type}" != "missing" ] && [ -n "$tgt_type" ] && [ "${type}" != "${tgt_type}" ]; then
-		if [ "${strategy}" == "new" ]; then
+		if [ "$strategy" = "new" ]; then
 			abort "Cannot repair \"$stratum\" with --new strategy due to problematic mount at \"${mnt}\""
 		fi
 		umount_r --init "${root}${mnt}"
@@ -83,7 +81,7 @@ ensure_mnt() {
 	# If a mount point is private but needs to be shared, we need to
 	# re-mount it with shared set on the source.
 	if ! is_bedrock "${stratum}" && ! "${shared}" && "${tgt_share}"; then
-		if [ "${strategy}" == "new" ]; then
+		if [ "$strategy" = "new" ]; then
 			abort "Cannot repair \"$stratum\" with --new strategy due to problematic mount at \"${mnt}\""
 		fi
 		umount_r --init "${root}${mnt}"
@@ -318,4 +316,4 @@ for alias in ${strata}; do
 	fi
 done
 
-exit_success
+die 0

@@ -1,22 +1,20 @@
-#!/bedrock/libexec/busybox sh
-#
-# brl report
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2015-2019 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Generates report about system status
+#!/bin/sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-report' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-report), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Generates report about system status (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 # Continue if there are errors
 set +eu
 trap '' EXIT
 
 print_help() {
-	printf "
+	printf '%s\n' "
 Usage: ${color_cmd}brl report ${color_sub}[options] <output>${color_norm}
 
 Generates a report about the current ${color_bedrock}Bedrock Linux${color_norm} system for use in debugging
@@ -56,7 +54,7 @@ if [ -e "${report}" ]; then
 fi
 
 run() {
-	notice "Running ${color_cmd}\`${*}\`${color_norm}"
+	einfo "Running ${color_cmd}\`${*}\`${color_norm}"
 	(
 		echo '$ '"${*}"
 		eval "${@}" | sed 's/^/    /'
@@ -64,7 +62,7 @@ run() {
 	) >>"${report}" 2>&1 || true
 }
 
-notice "Creating report at ${color_file}\`$report\`${color_norm}."
+einfo "Creating report at ${color_file}\`$report\`${color_norm}."
 echo "Bedrock Linux system report" >>"${report}"
 echo "" >>"${report}"
 
@@ -97,6 +95,6 @@ run "uname -a"
 run "env"
 run "/bedrock/libexec/getfattr -d /bedrock/strata/bedrock"
 
-notice "Completed creating report at ${color_file}\`$report\`${color_norm}."
+einfo "Completed creating report at ${color_file}\`$report\`${color_norm}."
 
-exit_success
+die 0

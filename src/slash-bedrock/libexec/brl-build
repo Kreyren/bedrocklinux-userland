@@ -1,0 +1,193 @@
+#!/bin/sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Inspired in part upon 'emmett1' from Venom Linux (https://venomlinux.org/), which is:
+# 		Copyright 2016-2019 emmett1 <emmett1.2miligrams@gmail.com> as GPLv3
+
+# Builds userland from source/scratch
+# Legend: W-WIP; X-done; F-Fixme
+# - [X] Logic to manage arguments on POSIX
+# - [W] Output a help message
+# - [ ] Use instructions in src/share/brl-build/foo.bar
+#   - What do we want to use for bar? (Using bar for better detection)
+# - [ ] Logic to make file system hierarchy
+#   - [ ] FSH 3.0
+#     - [F] Make a wrapper for directory creation
+#     - [X] Make only core
+#     - [X] Make only optional
+#     - [X] Make core+optional
+#     - [ ] Allow cherry-picking of directories
+#   - [ ] OSTree
+# - [ ] Toolchain management
+#   - [ ] GCC
+#   - [ ] Clang
+#   - [ ] Cargo
+#   - [ ] Python
+#   - [ ] bash
+#   - [ ] sh
+#   - [ ] busybox
+#   - [ ] core-utils
+#   - [ ] bin-utils
+# - [ ] Package Manager management
+#   - [ ] paludis
+#   - [ ] portage
+#   - [ ] apt
+#   - [ ] pacman
+#   - [ ] zypper
+#   - [ ] Whatever fedora is using
+#   - [ ] Slackware?
+#   - [ ] Crux?
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
+BRL_MakeFilesystemHierarchy() {
+	# Sanitize destdir variable
+	if [ -z "$destdir" ]; then
+		case $LANG in
+			en*) die 2 "Function 'BRL_MakeFilesystemHierarchy' doesn't have required destdir variable" ;;
+			*) die 2 "Function 'BRL_MakeFilesystemHierarchy' doesn't have required destdir variable"
+		esac
+	elif [ -n "$destdir" ]; then
+		fixme "Sanitize destdir variable in 'BRL_MakeFilesystemHierarchy' function"
+	fi
+
+	arg="$1"
+	fixme "Shift arguments in function' BRL_MakeFilesystemHierarchy'"
+	fixme "Sanitize arguments in function 'BRL_MakeFilesystemHierarchy'"
+
+	fixme "Function 'BRL_MakeFilesystemHierarchy' needs a method to allow cherry-picking of directories"
+
+	# Logic to make various file hierarchies
+	## Create the core FSH-3.0 file hierarchy (Reference?)
+	BRL_MFH_FSH3_0_CORE() {
+		emkdir "$destdir/bin" 0755 root root
+		emkdir "$destdir/dev" 0755 root root
+		emkdir "$destdir/dev/null" 0666 root root # Based on emmet1
+		emkdir "$destdir/dev/console" 0600 root root # Based on emmet1
+		emkdir "$destdir/etc" 0755 root root
+		emkdir "$destdir/etc/opt" 0755 root root
+		emkdir "$destdir/home" 0755 root root
+		emkdir "$destdir/lib" 0755 root root
+		emkdir "$destdir/media" 0755 root root
+		emkdir "$destdir/mnt" 0755 root root
+		emkdir "$destdir/opt" 0755 root root
+		emkdir "$destdir/proc" 0755 root root
+		emkdir "$destdir/run" 0755 root root
+		emkdir "$destdir/sbin" 0755 root root
+		emkdir "$destdir/srv" 0755 root root
+		emkdir "$destdir/sys" 0755 root root
+		emkdir "$destdir/tmp" 1777 root root
+		emkdir "$destdir/usr" 0755 root root
+		emkdir "$destdir/usr/bin" 0755 root root
+		emkdir "$destdir/usr/include" 0755 root root
+		emkdir "$destdir/usr/lib" 0755 root root
+		emkdir "$destdir/usr/sbin" 0755 root root
+		emkdir "$destdir/usr/share" 0755 root root
+		emkdir "$destdir/usr/share/man" 0755 root root
+		emkdir "$destdir/usr/var" 0755 root root
+		emkdir "$destdir/usr/var/cache" 0755 root root
+		emkdir "$destdir/usr/var/crash" 0755 root root
+		emkdir "$destdir/usr/var/lock" 0755 root root
+		emkdir "$destdir/usr/var/log" 0755 root root
+		emkdir "$destdir/usr/var/opt" 0755 root root
+		emkdir "$destdir/usr/var/spool" 0755 root root
+		emkdir "$destdir/usr/var/tmp" 0755 root root
+	}
+
+	## Create optional directories of FSH-3.0 file hierarchy (Reference?)
+	BRL_MFH_FSH3_0_OPTIONAL() {
+		emkdir "$destdir/etc" 0755 root root
+		emkdir "$destdir/etc/X11" 0755 root root && warn "Directory $destdir/etc/X11 is optional for configuration of the X Window System"
+		emkdir "$destdir/etc/sgml" 0755 root root && warn "Directory $destdir/etc/sgml is optional for SGML (Standard Generalized Markup Language) files"
+		emkdir "$destdir/etc/xml" 0755 root root && warn "Directory $destdir/etc/xml is optional for XML (Extensible Markup Language) files"
+
+		fixme "Function 'BRL_MFH_FSH3_0_OPTIONAL' needs better logic to determine arch used"
+		emkdir "$destdir/lib32" 0755 root root && warn "Directory $destdir/lib32 is used only on 32-bit systems and multilib"
+		emkdir "$destdir/lib64" 0755 root root && warn "Directory $destdir/lib64 is used only on 64-bit systems"
+
+		fixme "Function 'BRL_MFH_FSH3_0_OPTIONAL' needs better logic to determine arch used"
+		emkdir "$destdir/root" 0750 root root && warn "Directory $destdir/root is based on FSH 3.0 (https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf) optional"
+		emkdir "$destdir/usr/lib32" 0755 root root && warn "Directory $destdir/usr/lib32 is used only on 32-bit systems and multilib"
+		emkdir "$destdir/usr/lib64" 0755 root root && warn "Directory $destdir/usr/lib64 is used only on 32-bit systems and multilib"
+
+		emkdir "$destdir/usr" 0755 root root
+		emkdir "$destdir/usr/share" 0755 root root
+		emkdir "$destdir/usr/share/color" 0755 root root && warn "Directory $destdir/usr/share/color is optional directory for Color Management informations"
+		emkdir "$destdir/usr/share/dict" 0755 root root && warn "Directory $destdir/usr/share/dict is optional directory for word lists"
+		emkdir "$destdir/usr/share/misc" 0755 root root && warn "Directory $destdir/usr/share/misc is optional directory for architecture-independant data"
+		emkdir "$destdir/usr/share/sgml" 0755 root root && warn "Directory $destdir/usr/share/dict is optional directory for SGML (Standard Generalized Markup Language) data"
+		emkdir "$destdir/usr/share/xml" 0755 root root && warn "Directory $destdir/usr/share/xml is optional directory for XML (Extensible Markup Language) data"
+		emkdir "$destdir/usr/src" 0755 root root && warn "Directory $destdir/usr/src is optional directory for Source Code"
+
+		emkdir "$destdir/var" 0755 root root
+		emkdir "$destdir/var/accounts" 0755 root root && warn "Directory $destdir/var/accounts is optional directory for process accounting logs"
+		emkdir "$destdir/var/cache" 0755 root root
+		emkdir "$destdir/var/cache/fonts" 0755 root root && warn "Directory $destdir/var/fonts is optional directory for locally-generated fonts"
+		emkdir "$destdir/var/cache/man" 0755 root root && warn "Directory $destdir/var/man is optional directory for locally-generated manual pages"
+		emkdir "$destdir/var/games" 0755 root root && warn "Directory $destdir/var/games is optional directory for variable game data"
+		emkdir "$destdir/var/mail" 0755 root root && warn "Directory $destdir/var/mail is optional directory for user mailbox files"
+		emkdir "$destdir/var/yp" 0755 root root && warn "Directory $destdir/var/yp is optional directory for Network Information Service (NIS) database files"
+	}
+
+	# Make OSTree file hierarchy (Reference?)
+	BRL_MFH_OSTREE() {
+		die fixme "Implement OSTree file hierarchy"
+	}
+
+	case $arg in
+		fsh-all)
+			BRL_MFH_FSH3_0_CORE
+			BRL_MFH_FSH3_0_OPTIONAL
+		;;
+		fsh-core) BRL_MFH_FSH3_0_CORE ;;
+		fsh-optional) BRL_MFH_FSH3_0_OPTIONAL ;;
+		ostree) BRL_MFH_OSTREE ;;
+		*) die 2 "Invalid argument '$arg' has been parsed in 'BRL_MakeFilesystemHierarchy' function"
+	esac
+}
+
+# Argument management
+## Keep this always at the bottom of the code!
+## Do not shift all arguments since $0 is shell/bash which may be used in logic
+while [ "$#" -gt 1 ]; do case $1 in
+	ping) printf '%s\n' "ping"; shift 1 ;;
+	/*) # Expecting unix-path
+		fixme "Sanitize input of unix-path logic to assign destdir"
+		destdir="$1"
+		shift 1
+	;;
+	help|-help|--help|-h)
+		case $LANG in
+			en*)
+				printf '%s\n' \
+					"(FIXME header)" \
+					"Usage:   brl build (FIXME arguments)" \
+					"" \
+					"Options:" \
+					"--help     Output a help message" \
+					"(FIXME)    (FIXME)" \
+					"" \
+					"(WIP name) source: <(FIXME url/to/source)>" \
+					"(FIXME get help info)"
+			;;
+			*)
+				# Do not Translate
+				printf '%s\n' \
+					"== This message is not translated! Using default english ==" \
+					"(FIXME header)" \
+					"Usage:   brl build (FIXME arguments)" \
+					"" \
+					"Options:" \
+					"--help     Output a help message" \
+					"(FIXME)    (FIXME)" \
+					"" \
+					"(WIP name) source: <(FIXME url/to/source)>" \
+					"(FIXME get help info)"
+		esac
+		exit 0
+	;;
+	*) die 255 "Unknown argument '$arg' was parsed in the brl-build program"
+esac; done
+
+die 0

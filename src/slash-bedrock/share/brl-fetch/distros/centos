@@ -1,4 +1,4 @@
-#!/bedrock/libexec/busybox sh
+#!/bin/sh
 #
 # CentOS bootstrap support
 #
@@ -9,15 +9,22 @@
 # Copyright (c) 2016-2019 Daniel Thau <danthau@bedrocklinux.org>
 #
 
+# This is sourced by brl-fetch -> source for checks
 # shellcheck source=src/slash-bedrock/libexec/brl-fetch
-. /bedrock/share/common-code
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 trap 'fetch_abort "Unexpected error occurred."' EXIT
+
+printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed!"
 
 check_supported() {
 	true
 }
 
 get_mirror_suffix() {
+    # shellcheck disable=SC2001 # HOTFIX!
 	if [ "$(echo "${target_release}" | sed 's/-[a-z]*$//')" -lt 8 ]; then
 		echo "${target_release}/os/${distro_arch}/"
 	else
@@ -30,6 +37,7 @@ speed_test_url() {
 }
 
 list_mirrors() {
+    # shellcheck disable=SC2001 # HOTFIX!
 	if [ "$(echo "${target_release}" | sed 's/-[a-z]*$//')" -lt 8 ]; then
 		repo="os"
 	else
@@ -124,6 +132,7 @@ fetch() {
 	# At the time of writing, the CentOS 8/8-stream primary.xml.gz
 	# incorrectly indicates platform-python requires
 	# /usr/libexec/platform-python rather than provides it.  Hack in a fix.
+    # shellcheck disable=SC2001 # HOTFIX!
 	if [ "$(echo "${target_release}" | sed 's/-[a-z]*$//')" -ge 8 ]; then
 		echo "/usr/libexec/platform-python	platform-python" >>"${bootstrap_dir}/brldb/provides/u"
 	fi
@@ -184,7 +193,8 @@ fetch() {
 		echo 'i386' >"${target_dir}/etc/${package_manager}/vars/basearch"
 	fi
 
-	LC_ALL=C chroot "${bootstrap_dir}" rpm -i --root=/target-root --nodeps ./packages/centos-release-*.rpm 2>/dev/null || true
+    LC_ALL=C chroot "${bootstrap_dir}" rpm -i --root=/target-root --nodeps ./packages/centos-release-*.rpm 2>/dev/null || true
+    # shellcheck disable=SC2001 # HOTFIX!
 	if [ "$(echo "${target_release}" | sed 's/-[a-z]*$//')" -ge 8 ]; then
 		LC_ALL=C chroot "${bootstrap_dir}" "${package_manager}" --installroot=/target-root install -y rpm-build "${package_manager}"
 	else

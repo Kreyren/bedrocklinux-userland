@@ -1,4 +1,4 @@
-#!/bedrock/libexec/busybox sh
+#!/bin/sh
 #
 # Void Linux bootstrap support
 #
@@ -9,8 +9,12 @@
 # Copyright (c) 2016-2019 Daniel Thau <danthau@bedrocklinux.org>
 #
 
+# This is sourced by brl-fetch -> source for checks
 # shellcheck source=src/slash-bedrock/libexec/brl-fetch
-. /bedrock/share/common-code
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 trap 'fetch_abort "Unexpected error occurred."' EXIT
 
 check_supported() {
@@ -108,7 +112,7 @@ fetch() {
 	tar xf "${cache}/xbps.tar.xz" -C "${bootstrap_dir}"
 
 	step "Running bootstrap software"
-	set +o pipefail
+
 	cp /bedrock/libexec/busybox "${bootstrap_dir}"
 	for dir in bin sbin usr/bin usr/sbin; do
 		mkdir -p "${bootstrap_dir}/${dir}"
@@ -127,7 +131,7 @@ fetch() {
 	esac
 	mkdir -p "${target_dir}/var/db/xbps/https___alpha_de_repo_voidlinux_org_current"
 	yes "" | LC_ALL=C XBPS_ARCH="${distro_arch}" chroot "${bootstrap_dir}" "/usr/bin/xbps-install.static" -S -R "${target_mirror}/current/${prefix}" -r /target-root/ base-voidstrap
-	set -o pipefail
+
 
 	step "Configuring"
 	if [ -d "${target_dir}/usr/share/xbps.d/" ]; then

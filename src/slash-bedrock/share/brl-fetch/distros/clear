@@ -1,4 +1,4 @@
-#!/bedrock/libexec/busybox sh
+#!/bin/sh
 #
 # Clear Linux bootstrap support
 #
@@ -9,8 +9,12 @@
 # Copyright (c) 2019 Daniel Thau <danthau@bedrocklinux.org>
 #
 
+# This is sourced by brl-fetch -> source for checks
 # shellcheck source=src/slash-bedrock/libexec/brl-fetch
-. /bedrock/share/common-code
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 trap 'fetch_abort "Unexpected error occurred."' EXIT
 
 check_supported() {
@@ -47,7 +51,7 @@ list_releases() {
 fetch() {
 	step "Calculating required bootstrap packages"
 	clear_update="$(wget -O- "${target_mirror}/current/latest")"
-	notice "Using update ${clear_update}"
+	einfo "Using update ${clear_update}"
 	wget -O "${bootstrap_dir}/Manifest.MoM" "${target_mirror}/update/${clear_update}/Manifest.MoM" >/dev/null 2>&1
 	loop=true
 	NL="
@@ -68,7 +72,7 @@ fetch() {
 		done
 	done | progress_unknown
 	required_bundles="$(cat "${bootstrap_dir}/required_bundles")"
-	notice "Bundles required to bootstrap swupd: $(echo "${required_bundles}" | tr '\n' ' ')"
+	einfo "Bundles required to bootstrap swupd: $(echo "${required_bundles}" | tr '\n' ' ')"
 
 	# Packs themselves aren't checksumed; their contents are.  There isn't
 	# a clean way to invalidate cached packs here, so just download them

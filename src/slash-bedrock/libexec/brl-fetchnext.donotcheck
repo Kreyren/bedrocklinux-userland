@@ -1,0 +1,140 @@
+#!/bin/sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-fetch' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-fetch), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
+
+# Backend to fetch various distributions into a stratum
+
+# TODO: Implement proper naming for functions/variables
+
+# SOURCING
+
+# This is sourced by brl-fetch -> source for checks
+# shellcheck source=src/slash-bedrock/libexec/brl-fetchnext
+
+# Allow output manipulation
+# shellcheck source=src/slash-bedrock/lib/shell/output-manipulation.sh
+. /bedrock/lib/shell/output-manipulation.sh
+
+# Customization
+# shellcheck source=src/slash-bedrock/lib/shell/maintainer.sh
+. /bedrock/lib/shell/maintainer.sh
+
+# VARIABLES
+
+# Define cache path
+## This patch is used for caching various binaries for brl-fetchnext to avoid re-downloading of frequently used files
+if [ $XDG_CACHE_HOME = "$HOME/.cache" ]; then
+	debug "Variable XDG_CACHE_HOME is defined correctly"
+elif [ $XDG_CACHE_HOME != "$HOME/.cache" ]; then
+	die 1 "Standardized variable XDG_CACHE_HOME is not defined on this system, please make an issue in $MAINTAINER since this has to be implemented for your OS"
+else
+	die 255 "XDG_CACHE_HOME check"
+fi
+
+# Define cache patch
+export brl_fetchnext_cache="$XDG_CACHE_HOME/$DISTRIBUTION/brl_fetchnext/"
+
+# Define stratdir (STRATum DIRectory)
+## This path is used for stratums
+export stratdir="/bedrock/strata/"
+
+# FUNCTIONS
+
+# Fetch tarball from upstream, cache it, check it's checksum and run it through the anti-virus
+if [ -z "$(bin_fetch)" ]; then
+	bin_fetch() {
+
+		die fixme "Function bin_fetch in brl-fetchnext needs translate from pseudo to real"
+		# Export tarball
+		# TODO: Implement metadata for this check
+		if [ ! "$stratdir/$stratname/etc/paludis" ]; then
+			# Cache tarball
+			if [ ! -e "https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-gnu-current.tar.xz" ]; then
+				# TODO: Implement logic to download a file using wget, curl, aria2c, fetch, etc.. depending on what is present
+				downloader "https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-gnu-current.tar.xz" -O "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz"
+
+				# Self-check
+				if [ -e "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz" ]; then
+					debug "Downloading of file 'exherbo-x86_64-pc-linux-gnu-current.tar.xz' has been verified"
+
+					# TODO: Run checksum check
+					checksum "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz" "some checksum here"
+
+					# TODO: Run virustotal check
+				fi
+			elif [ -e "https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-gnu-current.tar.xz" ]; then
+				debug "File 'exherbo-x86_64-pc-linux-gnu-current' is already cached, no need to download it"
+			else
+				die 255 "Caching of 'exherbo-x86_64-pc-linux-gnu-current'"
+			fi
+
+			extractor "$XDG_CACHE_HOME/$DISTRIBUTION/exherbo-x86_64-pc-linux-gnu-current.tar.xz"
+		elif [ "$destdir/etc/paludis" ]; then
+			debug "file .. exists, no need to extract it"
+		fi
+	}
+elif [ -n "$(bin_fetch)" ]; then
+	true
+else
+	die 255 "brl_fetchnext - bin_fetch"
+fi
+
+# LOGIC
+
+while [ $# -gt 1 ]; do case $1 in
+	/*) # FIXME: Expecting UNIX-path
+		# Define destdir
+		destdir="$1"
+		shift 1
+
+		# Self-check
+		if [ ! -d "$destdir" ]; then
+			die 1 "Set path for destdir is not valid directory - $destdir"
+		elif [ -d "$destdir" ]; then
+			debug "brl-fetchnext is using destdir which points to a proper directory - $destdir"
+		elif [ -f "$desdir" ]; then
+			die 1 "brl-fetchnext destdir '$destdir' points to a file, dieing for safety reasons"
+		else
+			die 255 "brl-fetchnext - destdir"
+		fi
+	;;
+	--distro|-distro|-D)
+		expected_distro="$2"
+		shift 2
+
+		# Self-check
+		case $expected_distro in
+			exherbo)
+				debug "Argument '$expected_distro' has been parsed in distro option for brl-fetchnext which is supported"
+			;;
+			*) die 2 "Unexpected argument has been parsed in brl-fetchnext, distro option - $expected_distro"
+		esac
+	;;
+	--name)
+		stratname="$2"
+		shift 2
+
+		# TODO: Define default name if none is used
+
+		# TODO: Self-check
+	;;
+	--list|-list|-L)
+		die fixme "Implement listing of supported fetchers"
+	;;
+	--help|-help|-h|-H)
+		fixme "Implement proper help message"
+
+		printf '%s\n' \
+			"Usage: brl-fetchnext [name-of-expected-stratum] [COMPONENT] [OPTION]" \
+			"" \
+			"Components:" \
+			"  -D, --distro      OPTIONS of supported distro which we will fetch" \
+			"" \
+			"Report bugs to: email_here" \
+			"Homepage: $MAINTAINER" \
+			"General help ..."
+	;;
+	*) die 2 "Unexpected argument '$1' has been parsed in brl-fetchnext"
+esac; done

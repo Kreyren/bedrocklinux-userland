@@ -1,45 +1,101 @@
-#!/bedrock/libexec/busybox sh
-#
-# Shared Bedrock Linux shell functions
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2016-2019 Daniel Thau <danthau@bedrocklinux.org>
+#!/bin/sh
+# shellcheck disable=SC2119
+# shellcheck disable=SC2154
+# shellcheck disable=SC1117
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'common-code' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/share/common-code), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-# Print the Bedrock Linux ASCII logo.
-#
-# ${1} can be provided to indicate a tag line.  This should typically be the
-# contents of /bedrock/etc/bedrock-release such that this function should be
-# called with:
-#     print_logo "$(cat /bedrock/etc/bedrock-release)"
-# This path is not hard-coded so that this function can be called in a
-# non-Bedrock environment, such as with the installer.
+# Shellcheck global disables
+## SC2119 - We are using 'okay' which has logic to die if any argument is assigned to it which conflicts with SC2119 (FIXME?)
+## SC2154 - This file is used for sourcing so checking for 'referenced, but not assigned' is useless for QA
+
+# shellcheck source=src/slash-bedrock/lib/shell/define-colors.sh
+. /bedrock/lib/shell/define-colors.sh
+
+# shellcheck source=src/slash-bedrock/lib/shell/output-manipulation.sh
+. /bedrock/lib/shell/output-manipulation.sh
+
+# shellcheck source=src/slash-bedrock/lib/shell/maintainer.sh
+. /bedrock/lib/shell/maintainer.sh
+
+fixme "Common code needs refractor for SC1117, currently disabled as HOTFIX"
+
+# Do not allow changes on runtime (?)
+#umask 022
+
+# Print the Kreyrock Linux ASCII logo in font 'Speed'
 print_logo() {
-	printf "${color_logo}"
-	# Shellcheck indicates an escaped backslash - `\\` - is preferred over
-	# the implicit situation below.  Typically this is agreeable as it
-	# minimizes confusion over whether a given backslash is a literal or
-	# escaping something.  However, in this situation it ruins the pretty
-	# ASCII alignment.
-	#
-	# shellcheck disable=SC1117
-	cat <<EOF
-__          __             __      
-\ \_________\ \____________\ \___  
- \  _ \  _\ _  \  _\ __ \ __\   /  
-  \___/\__/\__/ \_\ \___/\__/\_\_\ 
-EOF
-	if [ -n "${1:-}" ]; then
-		printf "%35s\\n" "${1}"
+	path="$1"
+	syntax_err="$2"
+
+	sanitize_func
+
+	# Shift all numerical arguments excluding $0
+	while [ "$#" -gt 1 ]; do shift 1; done
+
+	printf "$color_logo%s$color_norm\\n" \
+		'______ __                                      ______  ' \
+		'___  //_/________________  _______________________  /__' \
+		'__  ,<  __  ___/  _ \_  / / /_  ___/  __ \  ___/_  //_/' \
+		'_  /| | _  /   /  __/  /_/ /_  /   / /_/ / /__ _  ,<   ' \
+		'/_/ |_| /_/    \___/_\__, / /_/    \____/\___/ /_/|_|  ' \
+		'                    /____/'
+
+	# QA: Needed?
+	# First argument can be provided to indicate a tag line.  This should
+	# typically be the contents of /bedrock/etc/bedrock-release such that this
+	# function should be called with:
+	#     print_logo "$(cat /bedrock/etc/bedrock-release)"
+	# This path is not hard-coded so that this function can be called in a
+	# non-Kreyrock environment, such as with the installer.
+	if [ -n "${path:-}" ]; then
+		printf '%s\n' "%35s" "$path"
 	fi
-	printf "${color_norm}\\n"
+
+	unset path
 }
 
-# Compare Bedrock Linux versions.  Returns success if the first argument is
-# newer than the second.  Returns failure if the two parameters are equal or if
-# the second is newer than the first.
+# Sanitized method to create a directory
+## Example of input: emkdir "$destdir/etc/opt" 0755 root root
+## SYNOPSIS: emkdir [unix-path] [numerical_permission] [group_owner] [user_owner]
+# shellcheck disable=SC2034
+## Remove once emkdir_[2-4] are assigned!
+emkdir() {
+
+	die fixme "Function emkdir is not finished"
+
+	fixme "Make better naming for a emkdir arguments"
+	emkdir_destdir="$1"
+	emkdir_2="$2"
+	emkdir_3="$3"
+	emkdir_4="$4"
+
+	fixme "Shift emkdir"
+	fixme "Sanitize input of emkdir"
+
+	if [ ! -d "$emkdir_destdir" ]; then
+		mkdir "$emkdir_destdir" || die 1 "Unable to make a new directory in '$emkdir_destdir'"
+		fixme emkdir "Set read,write,executable accordingly"
+		fixme emkdir "Set ownership"
+	elif [ ! -f "$emkdir_destdir" ]; then
+		die 1 "Path '$emkdir_destdir' is a file, we are unable to make a directory there"
+	elif [ ! -b "$emkdir_destdir" ]; then
+		die 1 "Path '$emkdir_destdir' is a block device, for safety reasons we are dieing here, mount this block device prior to making a directory on it"
+	elif [ -d "$emkdir_destdir" ]; then
+		debug "Directory '$emkdir_destdir' already exists"
+	elif [ ! -h "$emkdir_destdir" ]; then
+		die 1 "Path '$emkdir_destdir' ends up at symbolic link, dieing for safety reasons"
+	elif [ ! -S "$emkdir_destdir" ]; then
+		die 1 "Path '$emkdir_destdir' is a socket file, dieing for safety reasons"
+	fi
+
+	fixme "verify that expected properties of a directory are set"
+}
+
+# Compare Kreyrock/Bedrock Linux versions.
+# Returns success if the first argument is newer than the second.  Returns failure if the two parameters are equal or if the second is newer than the first.
 #
 # To compare for equality or inequality, simply do a string comparison.
 #
@@ -57,74 +113,124 @@ ver_cmp_first_newer() {
 	# | \------- minor
 	# \--------- major
 
-	left_major="$(echo "${1}" | awk -F'[^0-9][^0-9]*' '{print$1}')"
-	left_minor="$(echo "${1}" | awk -F'[^0-9][^0-9]*' '{print$2}')"
-	left_patch="$(echo "${1}" | awk -F'[^0-9][^0-9]*' '{print$3}')"
-	left_tag="$(echo "${1}" | awk -F'[0-9][0-9]*' '{print$4}')"
-	left_tag_ver="$(echo "${1}" | awk -F'[^0-9][^0-9]*' '{print$4}')"
+	left="$1"
+	right="$2"
+	syntax_err="$3"
 
-	right_major="$(echo "${2}" | awk -F'[^0-9][^0-9]*' '{print$1}')"
-	right_minor="$(echo "${2}" | awk -F'[^0-9][^0-9]*' '{print$2}')"
-	right_patch="$(echo "${2}" | awk -F'[^0-9][^0-9]*' '{print$3}')"
-	right_tag="$(echo "${2}" | awk -F'[0-9][0-9]*' '{print$4}')"
-	right_tag_ver="$(echo "${2}" | awk -F'[^0-9][^0-9]*' '{print$4}')"
+	# Die if invalid argument is parsed
+	[ -n "$syntax_err" ] && die 2 "Invalid argument has been parsed in function 'ver_cmp_first_newer' - $syntax_err"
 
-	[ "${left_major}" -gt "${right_major}" ] && return 0
-	[ "${left_major}" -lt "${right_major}" ] && return 1
-	[ "${left_minor}" -gt "${right_minor}" ] && return 0
-	[ "${left_minor}" -lt "${right_minor}" ] && return 1
-	[ "${left_patch}" -gt "${right_patch}" ] && return 0
-	[ "${left_patch}" -lt "${right_patch}" ] && return 1
-	[ -z "${left_tag}" ] && [ -n "${right_tag}" ] && return 0
-	[ -n "${left_tag}" ] && [ -z "${right_tag}" ] && return 1
-	[ -z "${left_tag}" ] && [ -z "${right_tag}" ] && return 1
-	[ "${left_tag}" \> "${right_tag}" ] && return 0
-	[ "${left_tag}" \< "${right_tag}" ] && return 1
-	[ "${left_tag_ver}" -gt "${right_tag_ver}" ] && return 0
-	[ "${left_tag_ver}" -lt "${right_tag_ver}" ] && return 1
-	return 1
-}
-
-# Call to return successfully.
-exit_success() {
-	trap '' EXIT
-	exit 0
-}
-
-# Abort the given program.  Prints parameters as an error message.
-#
-# This should be called whenever a situation arises which cannot be handled.
-#
-# This file sets various shell settings to exit on unexpected errors and traps
-# EXIT to call abort.  To exit without an error, call `exit_success`.
-abort() {
-	trap '' EXIT
-	printf "${color_alert}ERROR: %s\\n${color_norm}" "${@}" >&2
-	exit 1
-}
-
-# Clean up "${target_dir}" and prints an error message.
-#
-# `brl fetch`'s various back-ends trap EXIT with this to clean up on an
-# unexpected error.
-fetch_abort() {
-	trap '' EXIT
-	printf "${color_alert}ERROR: %s\\n${color_norm}" "${@}" >&2
-
-	if cfg_values "miscellaneous" "debug" | grep -q "brl-fetch"; then
-		printf "${color_alert}Skipping cleaning up ${target_dir:-} due to bedrock.conf debug setting.${color_norm}\n"
-	elif [ -n "${target_dir:-}" ] && [ -d "${target_dir:-}" ]; then
-		if ! less_lethal_rm_rf "${target_dir:-}"; then
-			printf "${color_alert}ERROR cleaning up ${target_dir:-}
-You will have to clean up yourself.
-!!! BE CAREFUL !!!
-\`rm\` around mount points may result in accidentally deleting something you wish to keep.
-Consider rebooting to remove mount points and kill errant processes first.${color_norm}
-"
-		fi
+	# Compare whole string
+	if [ "$left" = "$right" ]; then
+		return 1
+	elif [ "$left" != "$right" ]; then
+		okay
+	else
+		die 255 "Function 'ver_cmp_first_newer' compare left to right"
 	fi
 
-	exit 1
+	# Sanitize the input
+	# QA: Fix duplicates
+	# FIXME: Sanitize for tag and tag version
+	case $left in
+		[0-9].[0-9].[0-9]*|[0-9][0-9].[0-9].[0-9]*|[0-9][0-9].[0-9][0-9].[0-9]*|[0-9][0-9].[0-9][0-9].[0-9][0-9]*) true ;;
+		*) die 255 "Invalid input was parsed in function 'ver_cmp_first_newer': $left"
+	esac
+
+	# FIXME: Sanitize for tag and tag version
+	case $right in
+		[0-9].[0-9].[0-9]*|[0-9][0-9].[0-9].[0-9]*|[0-9][0-9].[0-9][0-9].[0-9]*|[0-9][0-9].[0-9][0-9].[0-9][0-9]*) true ;;
+		*) die 255 "Invalid input was parsed in function 'ver_cmp_first_newer': $right"
+	esac
+
+	# Define left
+	left_major="$(printf '%s\n' "$left" | awk -F'[^0-9][^0-9]*' '{print$1}')"
+	left_minor="$(printf '%s\n' "$left" | awk -F'[^0-9][^0-9]*' '{print$2}')"
+	left_patch="$(printf '%s\n' "$left" | awk -F'[^0-9][^0-9]*' '{print$3}')"
+	left_tag="$(printf '%s\n' "$left" | awk -F'[0-9][0-9]*' '{print$4}')"
+	left_tag_ver="$(printf '%s\n' "$left" | awk -F'[^0-9][^0-9]*' '{print$4}')"
+
+	# Define right
+	right_major="$(printf '%s\n' "$right" | awk -F'[^0-9][^0-9]*' '{print$1}')"
+	right_minor="$(printf '%s\n' "$right" | awk -F'[^0-9][^0-9]*' '{print$2}')"
+	right_patch="$(printf '%s\n' "$right" | awk -F'[^0-9][^0-9]*' '{print$3}')"
+	right_tag="$(printf '%s\n' "$right" | awk -F'[0-9][0-9]*' '{print$4}')"
+	right_tag_ver="$(printf '%s\n' "$right" | awk -F'[^0-9][^0-9]*' '{print$4}')"
+
+	# Compare major
+	if [ "$left_major" -gt "$right_major" ]; then
+		return 0
+	elif [ "$left_major" -lt "$right_major" ]; then
+		return 1
+	elif [ "$left_major" = "$right_major" ]; then
+		okay
+	else
+		die 255 "Function 'ver_cmp_first_newer' comparing $left to $right major"
+	fi
+
+	# Compare minor
+	if [ "$left_minor" -gt "$right_minor" ]; then
+		return 0
+	elif [ "$left_minor" -lt "$right_minor" ]; then
+		return 1
+	elif [ "$left_minor" = "$right_minor" ]; then
+		okay
+	else
+		die 255 "Function 'ver_cmp_first_newer' comparing $left to $right minor"
+	fi
+
+	# Compare patch
+	if [ "$left_patch" -gt "$right_patch" ]; then
+		return 0
+	elif [ "$left_patch" -lt "$right_patch" ]; then
+		return 1
+	elif [ "$left_patch" = "$right_patch" ]; then
+		okay
+	else
+		die 255 "Function 'ver_cmp_first_newer' comparing $left to $right patch"
+	fi
+
+	# Compare tag
+	if [ -z "$left_tag" ] && [ -n "$right_tag" ]; then
+		return 1
+	elif [ -n "$left_tag" ] && [ -z "$right_tag" ]; then
+		return 0
+	elif [ -n "$left_tag" ] && [ -n "$right_tag" ]; then
+		case $left_tag in
+			alpha)
+				case $right_tag in
+					alpha) true ;;
+					beta) return 1 ;;
+					qamma) return 1 ;;
+					*) die 255 "Function 'ver_cmp_first_newer' does not recognize '$right_tag'"
+				esac
+			;;
+			beta)
+				case $right_tag in
+					alpha) return 0 ;;
+					beta) true ;;
+					qamma) return 1 ;;
+					*) die 255 "Function 'ver_cmp_first_newer' does not recognize '$right_tag'"
+				esac
+			;;
+			*) die 255 "Function 'ver_cmp_first_newer' does not recognize '$left_tag'"
+		esac
+	elif [ -z "$left_tag" ] && [ -z "$right_tag" ]; then
+		die 255 "Function 'ver_cmp_first_newer' failed at comparing $left to $right, is this non-standard version naming?"
+	else
+		die 255 "Function 'ver_cmp_first_newer' comparing tag"
+	fi
+
+	# Compare tag version
+	if [ "$left_tag_ver" -gt "$right_tag_ver" ]; then
+		return 0
+	elif [ "$left_tag_ver" -lt "$right_tag_ver" ]; then
+		return 1
+	else
+		die 255 "Function 'ver_cmp_first_newer' comparing tag version"
+	fi
+
+	unset left right left_major left_minor left_patch left_tag left_tag_ver right_major right_minor right_patch right_tag right_tag_ver
 }
 
 # Define print_help() then call with:
@@ -132,16 +238,20 @@ Consider rebooting to remove mount points and kill errant processes first.${colo
 # at the beginning of brl subcommands to get help handling out of the way
 # early.
 handle_help() {
-	if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
-		print_help
-		exit_success
-	fi
-}
+	# QA: Why are we stripping this?
+	args="${1:-}"
 
-# Print a message indicating some step without a corresponding step count was
-# completed.
-notice() {
-	printf "${color_misc}* ${color_norm}${*}\\n"
+	fixme "Is function 'handle_help' needed?"
+
+	case $args in
+		-h|--help)
+			print_help
+			die 0
+		;;
+		*) die 255 "Handle help"
+	esac
+
+	unset args
 }
 
 # Initialize step counter.
@@ -154,36 +264,66 @@ notice() {
 #     step "Completed step 2"
 #     step "Completed step 3"
 step_init() {
+	steps="$1"
+
+	if [ -n "$steps" ]; then
+		shift 1
+
+		syntax_err="$1"
+		[ -n "$syntax_err" ] && die 2 "Function step_init expects only one argument, but multiple were parsed: $syntax_err"
+	elif [ -n "$steps" ]; then
+		die 2 "Function 'step_init' requires at least one argument, but none were parsed"
+	else
+		die 255 "Function step_init, shifting"
+	fi
+
 	step_current=0
-	step_total="${1}"
+	step_total="$steps"
+
+	unset steps
 }
 
 # Indicate a given step has been completed.
-#
-# See `step_init()` above.
+# See `step_init()` above. (QA: Can't that be part of the same thing?)
 step() {
+	fixme "step_init should be part of step function"
 	step_current=$((step_current + 1))
 
-	step_count=$(printf "%d" "${step_total}" | wc -c)
+	# shellcheck disable=SC2034
+	## Used in sourcing no need to check for unused
+	step_count=$(printf "%d" "$step_total" | wc -c)
 	percent=$((step_current * 100 / step_total))
-	printf "${color_misc}[%${step_count}d/%d (%3d%%)]${color_norm} ${*:-}${color_norm}\\n" \
-		"${step_current}" \
-		"${step_total}" \
-		"${percent}"
+	# shellcheck disable=SC1087
+	## Seems to false trigger for array (FIXME, check if confirmed report to shellchck)
+	# shellcheck disable=SC2154
+	printf "$color_misc[%$step_countd/%d (%3d%%)]$color_norm ${*:-}$color_norm\\n" \
+		"$step_current" \
+		"$step_total" \
+		"$percent"
 }
 
 # Abort if parameter is not a legal stratum name.
 ensure_legal_stratum_name() {
-	name="${1}"
-	if echo "${name}" | grep -q '[[:space:]/\\:=$"'"'"']'; then
-		abort "\"${name}\" contains disallowed character: whitespace, forward slash, back slash, colon, equals sign, dollar sign, single quote, and/or double quote."
-	elif echo "x${name}" | grep "^x-"; then
-		abort "\"${name}\" starts with a \"-\" which is disallowed."
-	elif [ "${name}" = "bedrock" ] || [ "${name}" = "init" ]; then
-		abort "\"${name}\" is one of the reserved strata names: bedrock, init."
+	fixme "Is function 'ensure_legal_stratum_name' needed? Shoudn't it be part of something else?"
+	fixme "Refactor 'ensure_legal_stratum_name' function"
+	name="$1"
+
+	w_fixme "Shift in function ensure_legal_stratum_name"
+
+	if printf '%s\n' "$name" | grep -q '[[:space:]/\\:=$"'"'"']'; then
+		die 2 "Stratum name '$name' contains disallowed character: whitespace, forward slash, back slash, colon, equals sign, dollar sign, single quote, and/or double quote"
+	elif printf '%s\n' "x$name" | grep "^x-"; then
+		die 2 "Stratum name '$name' starts with a \"-\" which is not allowed"
+	elif [ "$name" = "bedrock" ] || [ "$name" = "init" ]; then
+		die 2 "Stratum name '$name' bedrock or init are not allowed since those are reserbed by the backend"
+	else
+		die 255 "Function 'ensure_legal_stratum_name', checking name"
 	fi
+
+	unset name
 }
 
+fixme "Shoudn't function 'strip_illegal_stratum_name_characters' be part of something else?"
 strip_illegal_stratum_name_characters() {
 	cat | sed -e 's![[:space:]/\\:=$"'"'"']!!g' -e "s!^-!!"
 }
@@ -193,17 +333,25 @@ strip_illegal_stratum_name_characters() {
 # at the beginning of brl subcommands to error early if insufficient parameters
 # are provided.
 min_args() {
+
+	fixme "Is function 'min_args' needed? Shoudn't it be part of argument catching?"
+	fixme "Function 'min_args' needs refactor"
+
 	arg_cnt="${1}"
 	tgt_cnt="${2}"
 	if [ "${arg_cnt}" -lt "${tgt_cnt}" ]; then
-		abort "Insufficient arguments, see \`--help\`."
+		die 2 "Insufficient arguments, see '--help'"
 	fi
 }
 
 # Aborts if not running as root.
 require_root() {
-	if ! [ "$(id -u)" -eq "0" ]; then
-		abort "Operation requires root."
+	if [ "$(id -u)" -gt "0" ]; then
+		die 3 "This operation requires root permission"
+	elif [ "$(id -u)" = "0" ]; then
+		debug "Script has been executed from root"
+	else
+		die 255 "require_root, check for root"
 	fi
 }
 
@@ -227,6 +375,8 @@ require_root() {
 # Only one lock may be held at a time.
 lock() {
 	require_root
+
+	fixme "Function 'lock' needs refactor"
 
 	if [ "${1:-}" = "--nonblock" ]; then
 		nonblock="${1}"
@@ -514,7 +664,9 @@ enforce_symlinks() {
 			# target location.  We do not know which of the two the
 			# user wishes to retain.  Play it safe and just
 			# generate a warning.
-			printf "${color_warn}WARNING: File or directory exists at both \`${proc_link}\` and \`${proc_tgt}\`.  Bedrock Linux expects only one to exist.  Inspect both and determine which you wish to keep, then remove the other, and finally run \`brl repair ${stratum}\` to remedy the situation.${color_norm}\\n"
+			# QA: Safe to ignore using variables
+			# shellcheck disable=SC2059
+			warn "File or directory exists at both '$proc_link' and '$proc_tgt'.  Bedrock Linux expects only one to exist. Inspect both and determine which you wish to keep, then remove the other, and finally run 'brl repair $stratum' to remedy the situation."
 		fi
 	done
 }
@@ -771,17 +923,18 @@ setup_binfmt_misc() {
 
 	# Remove registration with differing values.
 	if [ -r "${mount}/${name}" ] && [ "$(sha1sum "${mount}/${name}" | awk '{print$1}')" != "${sum}" ]; then
-		notice "Removing conflicting ${arch} binfmt registration"
-		echo '-1' >"${mount}/${name}"
+		einfo "Removing conflicting $arch binfmt registration"
+		printf '%s\n' '-1' >"$mount/$name"
 	fi
 
 	# Register if not already registered
-	if ! [ -r "${mount}/${name}" ]; then
-		echo "${reg}" >"${mount}/register"
+	if ! [ -r "$mount/$name" ]; then
+		printf '%s\n' "$reg" >"$mount/register"
 	fi
+
 	# Enable
-	printf "1" >"${mount}/${name}"
-	printf "1" >"${mount}/status"
+	printf "1" >"$mount/$name"
+	printf "1" >"$mount/status"
 }
 
 # Run executable in /bedrock/libexec with init stratum.
@@ -1464,58 +1617,3 @@ cfg_etcfs() {
 		' "${mount}/${key}"
 	done
 }
-
-trap 'abort "Unexpected error occurred."' EXIT
-
-set -eu
-set -o pipefail
-umask 022
-
-brl_color=true
-if ! [ -t 1 ]; then
-	brl_color=false
-elif [ -r /bedrock/etc/bedrock.conf ] &&
-	[ "$(cfg_value "miscellaneous" "color")" != "true" ]; then
-	brl_color=false
-fi
-
-if "${brl_color}"; then
-	export color_alert='\033[0;91m'             # light red
-	export color_priority='\033[1;37m\033[101m' # white on red
-	export color_warn='\033[0;93m'              # bright yellow
-	export color_okay='\033[0;32m'              # green
-	export color_strat='\033[0;36m'             # cyan
-	export color_disabled_strat='\033[0;34m'    # bold blue
-	export color_alias='\033[0;93m'             # bright yellow
-	export color_sub='\033[0;93m'               # bright yellow
-	export color_file='\033[0;32m'              # green
-	export color_cmd='\033[0;32m'               # green
-	export color_rcmd='\033[0;31m'              # red
-	export color_distro='\033[0;93m'            # yellow
-	export color_bedrock="${color_distro}"      # same as other distros
-	export color_logo='\033[1;37m'              # bold white
-	export color_glue='\033[1;37m'              # bold white
-	export color_link='\033[0;94m'              # bright blue
-	export color_term='\033[0;35m'              # magenta
-	export color_misc='\033[0;32m'              # green
-	export color_norm='\033[0m'
-else
-	export color_alert=''
-	export color_warn=''
-	export color_okay=''
-	export color_strat=''
-	export color_disabled_strat=''
-	export color_alias=''
-	export color_sub=''
-	export color_file=''
-	export color_cmd=''
-	export color_rcmd=''
-	export color_distro=''
-	export color_bedrock=''
-	export color_logo=''
-	export color_glue=''
-	export color_link=''
-	export color_term=''
-	export color_misc=''
-	export color_norm=''
-fi

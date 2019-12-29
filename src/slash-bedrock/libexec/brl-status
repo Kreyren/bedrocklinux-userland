@@ -1,19 +1,16 @@
-#!/bedrock/libexec/busybox sh
-#
-# brl status
-#
-#      This program is free software; you can redistribute it and/or
-#      modify it under the terms of the GNU General Public License
-#      version 2 as published by the Free Software Foundation.
-#
-# Copyright (c) 2012-2018 Daniel Thau <danthau@bedrocklinux.org>
-#
-# Prints specified stratum's status.
+#!/bin/sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Based in part upon 'brl-status' from Bedrock Linux (https://github.com/bedrocklinux/bedrocklinux-userland/blob/master/src/slash-bedrock/libexec/brl-status), which is:
+# 		Copyright 2016-2019 Daniel Thau <danthau@bedrocklinux.org> as GPLv2
 
-. /bedrock/share/common-code
+# Prints specified stratum's status (FIXME, more info)
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
 
 print_help() {
-	printf "Usage: ${color_cmd}brl status ${color_sub}[options] <strata>${color_norm}
+	printf '%s\n' "Usage: ${color_cmd}brl status ${color_sub}[options] <strata>${color_norm}
 
 Prints specified ${color_term}stratum${color_norm}'s status.  The status may be one of the following:
 ${color_term}enabled${color_norm}, ${color_term}disabled${color_norm}, ${color_term}hidden${color_norm}, or ${color_term}broken${color_norm}.  If no ${color_term}strata${color_norm} are specified, defaults to
@@ -74,19 +71,19 @@ check_links() {
 	root="${1}"
 	for link in $(cfg_keys "symlinks"); do
 		target="$(cfg_values "symlinks" "${link}")"
-		actual="$(stinit busybox readlink "${root}${link}")" || true
-		# hard code /etc/mtab to support effectively equivalent variations of /proc/mounts
-		if [ "${link}" = "/etc/mtab" ] && [ "${actual}" = "/proc/mounts" ]; then
+		actual="$(stinit busybox readlink "${root}${link}")"
+
+		# hard code /etc/mtab to support effectively equivalent variations of /proc/mounts (QA: Why?)
+		if [ "${link}" = /etc/mtab ] && [ "${actual}" = /proc/mounts ]; then
 			continue
-		fi
-		if [ "${link}" = "/etc/mtab" ] && [ "${actual}" = "../proc/mounts" ]; then
+		elif [ "${link}" = /etc/mtab ] && [ "${actual}" = ../proc/mounts ]; then
 			continue
-		fi
-		if [ "${link}" = "/etc/mtab" ] && [ "${actual}" = "/proc/self/mounts" ]; then
+		elif [ "${link}" = /etc/mtab ] && [ "${actual}" = /proc/self/mounts ]; then
 			continue
-		fi
-		if [ "${link}" = "/etc/mtab" ] && [ "${actual}" = "../proc/self/mounts" ]; then
+		elif [ "${link}" = /etc/mtab ] && [ "${actual}" = ../proc/self/mounts ]; then
 			continue
+		else
+			die 255 "check_links, mtab mounts"
 		fi
 
 		if [ "${target}" != "${actual}" ]; then
@@ -98,15 +95,15 @@ check_links() {
 check_bedrock() {
 	stratum="${1}"
 	root="$(stratum_root --empty "${stratum}")"
-	problem=""
+	unset problem
 
 	check_links "${root}"
 
-	check_mnt "${stratum}" "/proc" "proc" "true"
-	check_mnt "${stratum}" "/etc" "fuse.etcfs" "false"
-	check_mnt "${stratum}" "/bedrock/run" "tmpfs" "false"
-	check_mnt "${stratum}" "/bedrock/strata/bedrock" "" "false"
-	check_mnt "${stratum}" "/bedrock/cross" "fuse.crossfs" "false"
+	check_mnt "${stratum}" /proc proc true
+	check_mnt "${stratum}" /etc fuse.etcfs false
+	check_mnt "${stratum}" /bedrock/run tmpfs false
+	check_mnt "${stratum}" /bedrock/strata/bedrock '' false
+	check_mnt "${stratum}" /bedrock/cross fuse.crossfs false
 
 	[ -z "${problem}" ]
 }
@@ -143,24 +140,24 @@ for stratum in ${strata}; do
 	if ! is_stratum_or_alias "${stratum}"; then
 		abort "No stratum or alias called \"${stratum}\"."
 	elif ! has_attr "/bedrock/strata/${stratum}" "show_list"; then
-		printf "${color_strat}${stratum}${color_glue}: ${color_norm}hidden\\n"
+		printf '%s\n' "$color_strat$stratum$color_glue:" "${color_norm}hidden"
 	elif ! is_enabled "${stratum}"; then
-		printf "${color_strat}${stratum}${color_glue}: ${color_norm}disabled\\n"
+		printf '%s\n' "$color_strat$stratum$color_glue:" "${color_norm}disabled"
 	elif is_bedrock "${stratum}"; then
 		if check_bedrock "${stratum}"; then
-			printf "${color_strat}${stratum}${color_glue}: ${color_okay}enabled${color_norm}\\n"
+			printf '%s\n' "${color_strat}${stratum}${color_glue}:" "${color_okay}enabled${color_norm}"
 		else
-			printf "${color_strat}${stratum}${color_glue}: ${color_alert}broken${color_norm}\\n"
-			printf "${problem}"
+			printf '%s\n' "${color_strat}${stratum}${color_glue}:" "${color_alert}broken${color_norm}"
+			printf '%s\n' "${problem}"
 		fi
 	else
 		if check_stratum "${stratum}"; then
-			printf "${color_strat}${stratum}${color_glue}: ${color_okay}enabled${color_norm}\\n"
+			printf '%s\n' "${color_strat}${stratum}${color_glue}:" "${color_okay}enabled${color_norm}"
 		else
-			printf "${color_strat}${stratum}${color_glue}: ${color_alert}broken${color_norm}\\n"
-			printf "${problem}"
+			printf '%s\n' "${color_strat}${stratum}${color_glue}:" "${color_alert}broken${color_norm}"
+			printf '%s\n' "${problem}"
 		fi
 	fi
 done
 
-exit_success
+die 0

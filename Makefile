@@ -25,7 +25,6 @@
 # - meson 0.38 or newer
 # - ninja-build
 # - pkg-config
-# - rsyn
 # - rsync
 # - udev (build-time only)
 #
@@ -131,14 +130,14 @@
 #
 #     make check
 
-BEDROCK_VERSION=0.7.12
-CODENAME=Poki
+BEDROCK_VERSION=9999
+CODENAME=Anubis
 ARCHITECTURE=$(shell ./detect_arch.sh | head -n1)
 FILE_ARCH_NAME=$(shell ./detect_arch.sh | tail -1)
-RELEASE=Bedrock Linux $(BEDROCK_VERSION) $(CODENAME)
-INSTALLER=bedrock-linux-$(BEDROCK_VERSION)-$(ARCHITECTURE).sh
+RELEASE=Kreyrock Linux $(BEDROCK_VERSION) $(CODENAME)
+INSTALLER=Kreyrock-linux-$(BEDROCK_VERSION)-$(ARCHITECTURE).sh
 
-RELEASE_CFLAGS=-O2
+RELEASE_CFLAGS=-O3
 
 ROOT=$(shell pwd)
 BUILD=$(ROOT)/build/$(ARCHITECTURE)
@@ -149,15 +148,14 @@ SLASHBR=$(BUILD)/bedrock
 COMPLETED=$(BUILD)/completed
 MUSLCC=$(SUPPORT)/bin/musl-gcc
 
-INDENT_FLAGS=--linux-style --dont-line-up-parentheses \
-	--continuation-indentation8 --indent-label0 --case-indentation0
+INDENT_FLAGS=-cdb -br
 WERROR_FLAGS=-Werror -Wall -Wextra -std=c99 -pedantic
 
 all: $(INSTALLER)
 
 remove_vendor_source:
 	rm -rf ./vendor
-  
+
 fetch_vendor_sources: \
 	vendor/busybox/.success_retrieving_source \
 	vendor/libaio/.success_retrieving_source \
@@ -174,7 +172,7 @@ fetch_vendor_sources: \
 
 clean:
 	rm -rf build/*
-	rm -f bedrock-linux-*-*.sh
+	rm -f Kreyrock-linux-*-*.sh
 
 #
 # The build directory structure.  This is a dependency of just about
@@ -223,7 +221,7 @@ builddir: $(COMPLETED)/builddir
 #
 # Support libraries and tools.  Populates $(SUPPORT)
 #
- 
+
 vendor/linux_headers/.success_fetching_source:
 	rm -rf vendor/linux_headers
 	mkdir -p vendor/linux_headers
@@ -840,69 +838,16 @@ format:
 	@ echo "======================================"
 	@ printf "\e[39m\n"
 
+check_ubuntu:
+	QA/common/qemu_ubuntu.sh
+
+check_debian:
+	#vmdb2 QA/test.vmdb --output test.img --verbose --rootfs-tarball=test2
+	QA/common/qemu_debian.sh
+
 check:
-	# Run various static checkers against the codebase.
-	#
-	# Generally, one should strive to get these all to pass submit
-	# something to Bedrock Linux.  However, the code base is not expected
-	# to pass all of these at all times, as as different versions of the
-	# static checkers may cover different things.  Don't fret if this
-	# returns some warnings.
-	#
-	# Unlike the rest of the build system, this links dynamically against
-	# the system libraries rather than statically against custom-built
-	# ones.  This removes the need to do things like teach static analysis
-	# tools about musl-gcc.  It comes at the cost of non-portable resulting
-	# binaries, but we don't care about the resulting binaries themselves,
-	# just the code being analyzed.
-	#
-	# Libraries you'll need to install:
-	#
-	# - uthash
-	# - libfuse3
-	# - libcap
-	# - libattr
-	#
-	# Static analysis tools which need to be installed:
-	#
-	# - shellcheck
-	# - cppcheck
-	# - clang
-	# - gcc
-	# - scan-build (usually distributed with clang)
-	# - shfmt (https://github.com/mvdan/sh)
-	# - indent (GNU)
-	#
-	# check against shellcheck
-	#
-	# - SC1008: unrecognized shebang, because shellcheck does not know about
-	#   `#!/bedrock/libexec/busybox sh`
-	# - SC2059: don't use variables in printf format string.  Following
-	#   this recommendation with ANSI color variables did not work for some
-	#   reason.  Excluding the check for the time being.
-	# - SC2039: `[ \< ]` and `[ \> ]` are non-POSIX.  However, they do work
-	#   with busybox.
-	# - SC1090: Can't follow dynamic sources.  That's fine, we know where
-	#   they are and are including them in the list to be checked.
-	for file in $$(find src/ -type f); do \
-		if head -n1 "$$file" | grep -q '^#!.*busybox sh$$'; then \
-			echo "checking shell file $$file"; \
-			shellcheck -x -s sh --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
-			! cat "$$file" | shfmt -p -d | grep '.' || exit 1; \
-		elif head -n1 "$$file" | grep -q '^#!.*bash$$'; then \
-			echo "checking bash file $$file"; \
-			shellcheck -x -s bash --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
-			! cat "$$file" | shfmt -ln bash -d | grep '.' || exit 1; \
-		elif head -n1 "$$file" | grep -q -e '^#!.*zsh$$' -e '^#compdef' "$$file"; then \
-			echo "checking zsh file $$file"; \
-			shellcheck -x -s bash --exclude="SC1008,SC2059,SC2039,SC1090" "$$file" || exit 1; \
-			! cat "$$file" | shfmt -ln bash -d | grep '.' || exit 1; \
-		fi; \
-	done
-	# check against cppcheck
-	for file in $$(find src/ -type f -name "*.[ch]"); do \
-		cppcheck --error-exitcode=1 "$$file" || exit 1; \
-	done
+	QA/tests/check.sh
+
 	# check against various compiler warnings
 	for compiler in clang gcc; do \
 		for dir in src/*/Makefile; do \
@@ -911,19 +856,20 @@ check:
 			$(MAKE) -C "$${dir%Makefile}" clean || exit 1; \
 		done \
 	done
-	# check C code formatting
-	for file in $$(find src/ -type f -name "*.[ch]"); do \
-		echo "checking formatting of $$file"; \
-		! cat "$$file" | indent $(INDENT_FLAGS) | diff -- "$$file" - | grep '.' || exit 1; \
-	done
-	@ echo "======================================="
-	@ echo "=== All static analysis checks pass ==="
-	@ echo "======================================="
 
-#
+	# Disable formatting for now
+	# # check C code formatting
+	# for file in $$(find src/ -type f -name "*.[ch]"); do \
+	# 	echo "checking formatting of $$file"; \
+	# 	! cat "$$file" | indent $(INDENT_FLAGS) | diff -- "$$file" - | grep '.' || exit 1; \
+	# done
+
+	@ printf '%s\n' \
+	"=======================================" \
+	"=== All static analysis checks pass ===" \
+	"======================================="
+
 # Release build environment setup
-#
-
 release-build-environment:
 	# This build system handles non-native CPU ISAs builds by leveraging
 	# qemu to run build scripts and makefiles that may not be cross-compile
@@ -1220,4 +1166,3 @@ release: \
 	@ echo "=== Completed Bedrock Linux $(BEDROCK_VERSION) release build ==="
 	@ echo "=== Completed Bedrock Linux $(BEDROCK_VERSION) release build ===" | sed 's/./=/g'
 	@ printf "\e[39m\n"
-

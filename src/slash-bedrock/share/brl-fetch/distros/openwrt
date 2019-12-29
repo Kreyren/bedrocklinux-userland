@@ -1,4 +1,4 @@
-#!/bedrock/libexec/busybox sh
+#!/bin/sh
 #
 # OpenWrt bootstrap support
 #
@@ -9,8 +9,12 @@
 # Copyright (c) 2019 Daniel Thau <danthau@bedrocklinux.org>
 #
 
+# This is sourced by brl-fetch -> source for checks
 # shellcheck source=src/slash-bedrock/libexec/brl-fetch
-. /bedrock/share/common-code
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
+
 trap 'fetch_abort "Unexpected error occurred."' EXIT
 
 check_supported() {
@@ -79,7 +83,10 @@ fetch() {
 	"x86_64") bootstrap_url="$(find_link "${target_mirror}/releases/${target_release}/targets/x86/64/" "^openwrt-${target_release}-${distro_arch}-generic-rootfs.tar.gz$")" ;;
 	esac
 
-	bootstrap_name="$(echo "${bootstrap_url}" | sed 's,^.*/,,')"
+    printf 'FIXME: %s\n' "SC2001 is hotfixed, fix needed"
+
+	bootstrap_name="${bootstrap_url##*/}"
+    # shellcheck disable=SC2001 # HOTFIX!
 	wget -O "${bootstrap_dir}/checksum" "$(echo "${bootstrap_url}" | sed 's,/[^/]*$,sha256sums,')"
 	bootstrap_checksum="$(awk -vname="${bootstrap_name}" '$2 == "*"name {print$1}' "${bootstrap_dir}/checksum")"
 

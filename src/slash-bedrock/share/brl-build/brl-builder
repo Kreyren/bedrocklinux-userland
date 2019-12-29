@@ -1,0 +1,8 @@
+#!/bin/sh
+# Copyright 2019 Jacob Hrbek <kreyren@rixotstudio.cz>
+# Distributed under the terms of the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html) or later
+# Inspired in part upon 'emmett1' from Venom Linux (https://venomlinux.org/), which is:
+# 		Copyright 2016-2019 emmett1 <emmett1.2miligrams@gmail.com> as GPLv3
+
+# shellcheck source=src/slash-bedrock/lib/shell/common-code.sh
+. /bedrock/lib/shell/common-code.sh
