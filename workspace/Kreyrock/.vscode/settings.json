@@ -1,7 +1,8 @@
 {
-   "extensions.showBuiltin": true,
-   "shellcheck.customArgs": [
-      "--external-sources"
-   ],
-   "editor.wordWrap": "on"
+    "extensions.showBuiltin": true,
+    "shellcheck.customArgs": [
+        "--external-sources"
+    ],
+    "editor.wordWrap": "on",
+    "editor.renderWhitespace": "all", 
 }

@@ -1,4 +1,4 @@
-#!/bedrock/libexec/busybox sh
+#!/bin/sh
 #
 # Manjaro Linux bootstrap support
 #

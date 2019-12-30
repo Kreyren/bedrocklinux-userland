@@ -137,6 +137,7 @@ FILE_ARCH_NAME=$(shell ./detect_arch.sh | tail -1)
 RELEASE=Kreyrock Linux $(BEDROCK_VERSION) $(CODENAME)
 INSTALLER=Kreyrock-linux-$(BEDROCK_VERSION)-$(ARCHITECTURE).sh
 
+# We are aiming for this project to be compatible with -O3 for additional performance
 RELEASE_CFLAGS=-O3
 
 ROOT=$(shell pwd)
@@ -152,6 +153,11 @@ INDENT_FLAGS=-cdb -br
 WERROR_FLAGS=-Werror -Wall -Wextra -std=c99 -pedantic
 
 all: $(INSTALLER)
+
+# Create an installer for hijacking
+hijacker:
+	@ make check
+
 
 remove_vendor_source:
 	rm -rf ./vendor
@@ -171,8 +177,9 @@ fetch_vendor_sources: \
 	vendor/zstd/.success_retrieving_source
 
 clean:
-	rm -rf build/*
-	rm -f Kreyrock-linux-*-*.sh
+	[ -e build/* ] && rm -rf build/*
+	[ -e Kreyrock-linux-*-*.sh ] && rm -f Kreyrock-linux-*-*.sh
+	[ -e bedrock-linux-*-*.sh ] && rm -f bedrock-linux-*-*.sh
 
 #
 # The build directory structure.  This is a dependency of just about
@@ -815,6 +822,8 @@ format:
 	# - shfmt (https://github.com/mvdan/sh)
 	# - indent (GNU)
 	#
+	@ printf 'FIXME: %s\n' "Code formatting is currently not implemented, decision for formating needs to be made"
+	exit 1
 	# style shell scripts
 	for file in $$(find src/ -type f); do \
 		if head -n1 "$$file" | grep -q '^#!.*busybox sh$$'; then \
@@ -839,9 +848,11 @@ format:
 	@ printf "\e[39m\n"
 
 check_ubuntu:
+	@ printf 'FIXME: %s\n' "Tests on ubuntu are not implemented"
 	QA/common/qemu_ubuntu.sh
 
 check_debian:
+	printf 'FIXME: %s\n' "Tests on debian are not implemented"
 	#vmdb2 QA/test.vmdb --output test.img --verbose --rootfs-tarball=test2
 	QA/common/qemu_debian.sh
 
@@ -857,17 +868,19 @@ check:
 		done \
 	done
 
-	# Disable formatting for now
-	# # check C code formatting
+	# check C code formatting
+	@ printf 'FIXME: %s\n' "Tests for indentation are skipped, fix required"
 	# for file in $$(find src/ -type f -name "*.[ch]"); do \
 	# 	echo "checking formatting of $$file"; \
 	# 	! cat "$$file" | indent $(INDENT_FLAGS) | diff -- "$$file" - | grep '.' || exit 1; \
 	# done
 
 	@ printf '%s\n' \
-	"=======================================" \
-	"=== All static analysis checks pass ===" \
-	"======================================="
+		"=======================================" \
+		"=== All static analysis checks pass ===" \
+		"======================================="
+
+	@ printf 'FIXME: %s\n' "This should also test the installer itself, currently not tested"
 
 # Release build environment setup
 release-build-environment:

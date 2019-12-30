@@ -6,7 +6,8 @@ USER root
 RUN apt-get update
 
 # Upgrade the image
-RUN apt -y upgrade && apt -y dist-upgrade
+RUN apt upgrade -y
+RUN apt dist-upgrade -y
 
 # Install build dependencies
 RUN apt install -y meson clang gcc git ninja-build bison autoconf fakeroot libcap-dev libfuse3-dev libtool pkg-config libcap-dev libattr1-dev uthash-dev gzip rsync autopoint uthash-dev
@@ -25,6 +26,16 @@ RUN brew install shfmt
 
 # Install Markdownlint (https://github.com/DavidAnson/markdownlint)
 RUN npm install markdownlint --save-dev
+
+## Get linting for Markdown
+# Get dependencies
+RUN apt install -y golang pandoc
+# Compile and install
+# USER gitpod
+#  RUN GOPATH="/workspace/go" go get github.com/mrtazz/checkmake
+#  RUN GOPATH="/workspace/go" make -C "$GOPATH/src/github.com/mrtazz/checkmake"
+#  RUN GOPATH="/workspace/go" make -C "$GOPATH/src/github.com/mrtazz/checkmake" install
+# USER root
 
 # Remove apt sources to clean up space
 RUN rm -rf /var/lib/apt/lists/*

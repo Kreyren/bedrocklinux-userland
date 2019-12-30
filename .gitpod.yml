@@ -5,6 +5,10 @@ ports:
 - port: 6080
   onOpen: open-preview
 
+# List the start up tasks. You can start them in parallel in multiple terminals. See https://www.gitpod.io/docs/44_config_start_tasks/
+tasks:
+- init: go get github.com/mrtazz/checkmake && make -C "$GOPATH/src/github.com/mrtazz/checkmake" && make -C "$GOPATH/src/github.com/mrtazz/checkmake" install
+
 vscode:
   extensions:
     - timonwong.shellcheck@0.8.1:16BMw7Jrwd/KkAhJrkHwqQ==
