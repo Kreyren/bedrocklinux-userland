@@ -152,12 +152,13 @@ MUSLCC=$(SUPPORT)/bin/musl-gcc
 INDENT_FLAGS=-cdb -br
 WERROR_FLAGS=-Werror -Wall -Wextra -std=c99 -pedantic
 
-all: $(INSTALLER)
+all:
+	@ printf 'FIXME: %s\n' "Target all in Makefile requires new rules for compilation" ; exit 1
 
 # Create an installer for hijacking
 hijacker:
 	@ make check
-
+	@ printf 'FIXME: %s\n' "Hijacker doesn't have the logic in the makefile" ; exit 1
 
 remove_vendor_source:
 	rm -rf ./vendor

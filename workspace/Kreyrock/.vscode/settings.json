@@ -1,8 +1,17 @@
 {
     "extensions.showBuiltin": true,
     "shellcheck.customArgs": [
-        "--external-sources"
+      "--external-sources"
     ],
     "editor.wordWrap": "on",
-    "editor.renderWhitespace": "all", 
+    "editor.renderWhitespace": "all",
+    "editor.tabSize": 2,
+    "editor.tabCompletion": "on",
+}
+
+{
+  "editor.wordWrap": "on",
+  "editor.renderWhitespace": "all",
+  "editor.tabSize": 2,
+  "editor.tabCompletion": "on",
 }

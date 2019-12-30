@@ -80,6 +80,7 @@ for file in $(find . -not \( \
 -name 'os-release' -prune -o \
 -name '.keepinfodir' -prune -o \
 -name 'include-bedrock' -prune -o \
+-name 'build' -prune -o \
 -name 'lock' -prune \
 \) -type f); do
 
@@ -122,8 +123,21 @@ for file in $(find . -not \( \
 		C)
 			cppcheck --error-exitcode=1 "$file" || die lintfail
 		;;
-		markdown|yaml|config|makefile|service|gpg|json|xml|dockerfile)
+		yaml|config|service|gpg|json|xml|dockerfile)
 			fixme LintNotImplemented
+		;;
+		markdown)
+			npx markdownlint "$file" || die lintfail
+		;;
+		makefile)
+			if curl https://api.github.com/repos/mrtazz/checkmake/tags 2>/dev/null | grep -qF '"name": "1.0.0",'; then
+				checkmake "$file" || die lintfail
+			elif ! curl https://api.github.com/repos/mrtazz/checkmake/tags 2>/dev/null | grep -qF '"name": "1.0.0",'; then
+				printf 'WARN: %s\n' "Command 'checkmake' used for linting is still in development, this is a stub implementation untill version 1.0.0 is released, skipping fatal assuming not reliable enough"
+				checkmake "$file" || true
+			else
+				printf 'FATAL: %s\n' "Unexpected happend in check.sh while linting makefile"
+			fi
 		;;
 		backup|png|vmdb)
 			true # Do not check these

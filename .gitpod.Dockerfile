@@ -24,8 +24,9 @@ RUN apt install -y vmdb2
 # Install shfmt using brew since it's not yet exported for apt
 RUN brew install shfmt
 
-# Install Markdownlint (https://github.com/DavidAnson/markdownlint)
-RUN npm install markdownlint --save-dev
+# Install Markdownlint-cli (https://github.com/igorshubovych/markdownlint-cli)
+RUN apt install -y npm
+RUN npm install -g markdownlint-cli
 
 ## Get linting for Markdown
 # Get dependencies
