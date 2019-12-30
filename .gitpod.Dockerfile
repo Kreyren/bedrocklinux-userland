@@ -26,17 +26,24 @@ RUN brew install shfmt
 
 # Install Markdownlint-cli (https://github.com/igorshubovych/markdownlint-cli)
 RUN apt install -y npm
-RUN npm install -g markdownlint-cli
+USER gitpod
+RUN npm install markdownlint-cli -g
 
 ## Get linting for Markdown
 # Get dependencies
+USER root
 RUN apt install -y golang pandoc
+RUN mkdir /opt/go
+RUN chown gitpod:gitpod /opt/go
 # Compile and install
-# USER gitpod
-#  RUN GOPATH="/workspace/go" go get github.com/mrtazz/checkmake
-#  RUN GOPATH="/workspace/go" make -C "$GOPATH/src/github.com/mrtazz/checkmake"
-#  RUN GOPATH="/workspace/go" make -C "$GOPATH/src/github.com/mrtazz/checkmake" install
-# USER root
+USER gitpod
+ENV GOPATH=/opt/go
+RUN go get github.com/mrtazz/checkmake
+RUN make -C "$GOPATH/src/github.com/mrtazz/checkmake"
+RUN make -C "$GOPATH/src/github.com/mrtazz/checkmake" install
+USER root
+# Hotfix for installation (https://github.com/gitpod-io/gitpod/issues/1039#issuecomment-569738634)
+RUN if ! command -v checkmake >/dev/null; then if [ -f "$GOPATH/src/github.com/mrtazz/checkmake/checkmake" ]; then cp "$GOPATH/src/github.com/mrtazz/checkmake/checkmake" /usr/bin/checkmake || exit 1 ;fi;fi
 
 # Remove apt sources to clean up space
 RUN rm -rf /var/lib/apt/lists/*
