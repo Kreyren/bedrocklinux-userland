@@ -17,6 +17,8 @@ if ! gcc --version >/dev/null 2>&1; then
 	exit 1
 fi
 
+printf 'FIXME: %s\n' "Replace detect_arch with 'uname -s' in the file itself and remove detech_arch.sh"
+
 case $(gcc -dumpmachine) in
 	aarch64-*)
 		printf '%s\n' "aarch64"

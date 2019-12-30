@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Experiment used to make a test for pgp files to make sure that they are not expired
+
+created="$(cat "src/slash-bedrock/gnupg-keys/paradigm.gpg" | gpg --list-packets | grep -o "sig created[^)]\{1,\})" -m 1)"
+created="${created##sig created }"
+created="${created%)}"
+
+echo "created - $created"
+
+year="${created%%-??-??}"
+
+echo "year - $year"
+
+month="${created##????-}"
+month="${month%%-??}"
+
+echo "month- $month"
+
+day="${created##????-??-}"
+
+echo "day - $day"
+
+expires="$(cat "src/slash-bedrock/gnupg-keys/paradigm.gpg" | gpg --list-packets | grep -m 1 -o "expires after[^)]\{1,\})")"
+expires="${expires##expires after }"
+expires="${expires%%)}"
+
+echo "expires - $expires"
+
+expires_year="$(printf '%s\n' "$expires" | grep -o "[^y]\{1,\}y")"
+expires_year="${expires_year%%y}"
+
+echo "expires_year - $expires_year"
+
+expires_days="${expires##${expires_year}}"
+expires_days="${expires_days##${expires_year}}"
+expires_days="${expires_days##y}"
+expires_days="$(printf '%s\n' "$expires_days" | grep -o "[^d]\{1,\}")"
+expires_days="${expires_days%%???????}"
+
+echo "expires_day - $expires_days"
+
+doomsday_year="$(( "$expires_year" + "$year" ))"
+
+
+doomsday_month="$(( "$expires_month" + "$month" ))"
+doomsday_day="$(( "$expires_day" + "$day" ))"
+
+echo "$doomsday_year$doomsday_month$doomsday_day"
+

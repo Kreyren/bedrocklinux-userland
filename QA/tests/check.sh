@@ -123,12 +123,33 @@ for file in $(find . -not \( \
 		C)
 			cppcheck --error-exitcode=1 "$file" || die lintfail
 		;;
-		yaml|config|service|gpg|json|xml|dockerfile)
+		yaml|config|service|json|xml|dockerfile)
 			fixme LintNotImplemented
 		;;
 		markdown)
-			npx markdownlint "$file" || die lintfail
+			npx markdownlint --config QA/markdownlint.json "$file" || die lintfail
 		;;
+    gpg)
+      created="$(cat "$file" | gpg --list-packets | grep -o "sig created[^)]\{1,\})" -m 1)"
+      created="${created##sig created }"
+      created="${created%)}"
+
+      year="${created%%-??-??}"
+
+      month="${created##????-}"
+      month="${created%%-??}"
+
+      day="${created##????-??-}"
+
+      expires="$(cat "$file" | gpg --list-packets | grep -o "expires after[^)]\{1,\})")"
+      expires="${expires##expires after }"
+      expires="${expires%%)}"
+
+      expires="$(cat "$file" | gpg --list-packets | grep -o "expires after[^)]\{1,\})")" ; expires="${expires##expires after }" ; expires="${expires%%)}"
+
+      expires_year="$(print '%s\n' "$expires" | grep -o "[^y]\{1,\}y")"
+      expires_year="${expires_year%%y}"
+    ;;
 		makefile)
 			if curl https://api.github.com/repos/mrtazz/checkmake/tags 2>/dev/null | grep -qF '"name": "1.0.0",'; then
 				checkmake "$file" || die lintfail

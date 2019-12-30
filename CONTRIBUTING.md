@@ -1,8 +1,10 @@
+# CONTRIBUTING
+
 This project is heavy on sanitization and portability that's why you are expected to follow these directives
 
 Every merge request has to pass linting (<https://en.wikipedia.org/wiki/Lint_(software))> otherwise your merge request will be closed on review unless you are submiting it as a part of mentoring program in which this should be stated in the original post.
 
-# How to contribute
+## How to contribute
 
 ### Do a fact check
 
@@ -22,15 +24,15 @@ If you are confident in your abilities and if you are open-minded about informat
 
 Throwing money on maintainers (not literally i learned my lesson) also counts as a contribution.
 
-# C lang
+## C lang
 
-### General
+### General C directives
 
 - FIXME: info needed
 
-# non-POSIX/POSIX shell/bash
+## non-POSIX/POSIX shell/bash
 
-### General
+### General shell/bash directives
 
 - Write the script to be POSIX-compatible unless there is a good reason to use non-POSIX shell/bash
 
@@ -41,7 +43,14 @@ This is for portability in case we need to use said script on POSIX system assum
 - Write a code on triger -> action bases
 
 ```sh
-# Unwanted
+# Unwanted{
+  "line-length": false,
+  "no-inline-html": {
+    "allowed_elements": [
+      "a"
+    ]
+  }
+}
 rm something
 # Wanted
   [ -e something ] && rm something
